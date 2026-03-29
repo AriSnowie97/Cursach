@@ -1,6 +1,18 @@
-@FreelancePlatformApi_HostAddress = http://localhost:5245
+@HostAddress = http://localhost:5245
 
-GET {{FreelancePlatformApi_HostAddress}}/weatherforecast/
+### 1. Добавить нового пользователя (Заказчика)
+POST {{HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Arina",
+  "email": "arina@test.com",
+  "passwordHash": "my_secret_password",
+  "role": "Customer"
+}
+
+### 
+
+### 2. Получить список всех пользователей
+GET {{HostAddress}}/api/users
 Accept: application/json
-
-###
