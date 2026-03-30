@@ -16,3 +16,48 @@ Content-Type: application/json
 ### 2. Получить список всех пользователей
 GET {{HostAddress}}/api/users
 Accept: application/json
+###
+
+### 3. Создать новый заказ (от лица пользователя id: 1)
+POST {{HostAddress}}/api/orders
+Content-Type: application/json
+
+{
+  "title": "Разработать дизайн лендинга",
+  "description": "Нужен современный дизайн для магазина в Figma",
+  "budget": 500.00,
+  "deadline": "2026-04-15T00:00:00Z",
+  "status": "Open",
+  "customerId": 1
+}
+
+### 4. Получить список всех заказов
+GET {{HostAddress}}/api/orders
+Accept: application/json
+
+###
+
+### 5. Создать Фрилансера (получит id: 2)
+POST {{HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Максим Фрилансер",
+  "email": "max@freelance.com",
+  "passwordHash": "secure_pass",
+  "role": "Freelancer"
+}
+
+### 
+
+### 6. Оставить отклик на заказ (Фрилансер id:2 откликается на Заказ id:1)
+POST {{HostAddress}}/api/proposals
+Content-Type: application/json
+
+{
+  "coverLetter": "Привет! Я эксперт в веб-дизайне, сделаю всё быстро и красиво.",
+  "price": 450.00,
+  "deliveryDays": 5,
+  "orderId": 1,
+  "freelancerId": 2
+}
