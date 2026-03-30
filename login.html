@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Вхід — Біржа</title>
+    <title>Вхід — Біржа фрілансу</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,22 +18,21 @@
         </nav>
     </header>
 
-    <main class="container">
-        <section>
+    <main class="login-container">
+        <section class="login-card">
             <h2>Авторизація</h2>
-            <form onsubmit="event.preventDefault(); alert('Функція входу ще в розробці! Але дизайн готовий 😉');">
-                <fieldset>
-                    <legend>Введіть ваші дані</legend>
+            <form id="loginForm">
+                <label for="email">Електронна пошта</label>
+                <input type="email" id="email" required placeholder="example@mail.com">
 
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" required placeholder="arina@test.com">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" required placeholder="••••••••">
 
-                    <label for="password">Пароль:</label>
-                    <input type="password" id="password" required>
-                </fieldset>
-
-                <button type="submit">Увійти в систему</button>
+                <button type="submit">Увійти</button>
             </form>
+            <p style="text-align: center; margin-top: 15px; font-size: 0.9em; color: #666;">
+                Немає акаунту? <a href="#" style="color: #1a73e8;">Зареєструватися</a>
+            </p>
         </section>
     </main>
 
