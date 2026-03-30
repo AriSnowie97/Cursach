@@ -1,0 +1,82 @@
+/* Основні налаштування */
+body {
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    margin: 0;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    color: #1a73e8;
+    margin-bottom: 30px;
+}
+
+/* Кнопка оновлення */
+.btn-update {
+    display: block;
+    width: 200px;
+    margin: 0 auto 30px;
+    padding: 12px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.btn-update:hover {
+    background-color: #1557b0;
+    transform: translateY(-2px);
+}
+
+/* Картки замовлень */
+#ordersList {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid #1a73e8;
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #202124;
+}
+
+.budget {
+    font-size: 1.1em;
+    color: #188038;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #e8f0fe;
+    color: #1967d2;
+    border-radius: 16px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
