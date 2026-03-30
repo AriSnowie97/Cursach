@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Вхід — Біржа</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Біржа фрілансу 🚀</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Всі замовлення</a></li>
+                <li><a href="create-order.html">Створити замовлення</a></li>
+                <li><a href="login.html">Вхід / Вихід</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section>
+            <h2>Авторизація</h2>
+            <form onsubmit="event.preventDefault(); alert('Функція входу ще в розробці! Але дизайн готовий 😉');">
+                <fieldset>
+                    <legend>Введіть ваші дані</legend>
+
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required placeholder="arina@test.com">
+
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password" required>
+                </fieldset>
+
+                <button type="submit">Увійти в систему</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
