@@ -2,11 +2,11 @@ async function loadOrders() {
     const list = document.getElementById('ordersList');
     
     try {
-        // Стукаємо до нашого API (переконайся, що порт 5245 вірний)
-        const response = await fetch('cursach-production.up.railway.app/api/orders');
+        // ДОДАНО https:// на початку
+        const response = await fetch('https://cursach-production-64f8.up.railway.app/api/orders');
         const orders = await response.json();
         
-        list.innerHTML = ''; // Очищуємо старе
+        list.innerHTML = ''; 
 
         orders.forEach(order => {
             const card = `
@@ -26,7 +26,7 @@ async function loadOrders() {
 }
 
 async function createOrder(event) {
-    event.preventDefault(); // Щоб сторінка не моргала при натисканні
+    event.preventDefault();
 
     const newOrder = {
         title: document.getElementById('title').value,
@@ -38,15 +38,16 @@ async function createOrder(event) {
     };
 
     try {
-        const response = await fetch('http://localhost:5245/api/orders', {
+        // ТУТ ТЕЖ ЗАМІНИЛИ localhost НА РЕАЛЬНУ АДРЕСУ
+        const response = await fetch('https://cursach-production-64f8.up.railway.app/api/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newOrder)
         });
 
         if (response.ok) {
-            document.getElementById('orderForm').reset(); // Очищаємо поля
-            loadOrders(); // Одразу показуємо нове замовлення
+            alert('Замовлення успішно створено!');
+            window.location.href = 'index.html'; // Перекидаємо на головну, щоб побачити результат
         } else {
             alert('Помилка сервера. Замовлення не створено.');
         }
@@ -55,5 +56,4 @@ async function createOrder(event) {
     }
 }
 
-// Завантажуємо дані відразу при відкритті сторінки
 loadOrders();
