@@ -88,9 +88,39 @@ function updateNavigation() {
     }
 }
 
+
+
+// НОВЕ: Фоновий будильник для сервера
+function wakeUpServer() {
+    fetch('https://cursach-production.up.railway.app/api/ping')
+        .then(() => console.log('✅ Будильник спрацював, сервер прокидається...'))
+        .catch(() => console.log('⏳ Сервер ще встає з ліжка...'));
+}
+
+// Функція для оновлення навігації залежно від статусу входу
+function updateNavigation() {
+    const userName = localStorage.getItem('userName');
+    const authLink = document.querySelector('nav ul li:last-child a');
+
+    if (userName && authLink) {
+        authLink.innerHTML = `👋 Привіт, ${userName} (Вийти)`;
+        authLink.href = "#"; 
+        
+        authLink.onclick = (e) => {
+            e.preventDefault();
+            localStorage.removeItem('userName'); 
+            alert('Ви вийшли з акаунту. До зустрічі!');
+            window.location.href = 'index.html'; 
+        };
+    }
+}
+
 // ВАЖНО: Ждем, пока загрузится весь HTML, и только потом ищем формы и вешаем обработчики
 document.addEventListener('DOMContentLoaded', () => {
     
+    // НОВЕ: Смикаємо бекенд одразу, як тільки завантажилась будь-яка сторінка
+    wakeUpServer();
+
     // Оновлюємо навігацію
     updateNavigation();
 
