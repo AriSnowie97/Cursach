@@ -8,9 +8,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy.AllowAnyOrigin()   // Дозволяємо будь-який сайт (у тому числі GitHub)
+              .AllowAnyMethod()   // Дозволяємо GET, POST тощо
+              .AllowAnyHeader();  // Дозволяємо будь-які заголовки
     });
 });
 
