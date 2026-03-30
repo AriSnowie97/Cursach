@@ -53,32 +53,36 @@ async function createOrder(event) {
 }
 loadOrders();
 
-// Функція для перевірки статусу входу
-function checkAuth() {
-    const user = localStorage.getItem('userName');
+// Функція для оновлення навігації залежно від статусу входу
+function updateNavigation() {
+    const userName = localStorage.getItem('userName');
     const authLink = document.querySelector('nav ul li:last-child a');
 
-    if (user && authLink) {
-        authLink.innerHTML = `Привіт, ${user} (Вихід)`;
-        authLink.href = "#";
-        authLink.onclick = () => {
-            localStorage.removeItem('userName');
-            location.reload();
+    if (userName && authLink) {
+        // Якщо Аріна ввійшла, показуємо вітання та кнопку виходу
+        authLink.innerHTML = `👋 Привіт, ${userName} (Вийти)`;
+        authLink.href = "#"; // Щоб сторінка не перезавантажувалася просто так
+        
+        authLink.onclick = (e) => {
+            e.preventDefault();
+            localStorage.removeItem('userName'); // Видаляємо ім'я з пам'яті
+            alert('Ви вийшли з акаунту. До зустрічі!');
+            window.location.href = 'index.html'; // Повертаємо на головну
         };
     }
 }
 
-// Обробка форми входу (якщо ми на сторінці login.html)
+// Обробка форми на сторінці login.html
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.onsubmit = (e) => {
         e.preventDefault();
-        // Імітуємо вхід для тебе, Аріно!
+        // Зберігаємо твоє ім'я, Аріно, у локальне сховище браузера
         localStorage.setItem('userName', 'Аріна'); 
-        alert('Вітаємо в системі!');
-        window.location.href = 'index.html';
+        alert('Успішний вхід! Вітаємо, Аріно.');
+        window.location.href = 'index.html'; 
     };
 }
 
-// Запускаємо перевірку при кожному завантаженні сторінки
-checkAuth();
+// Викликаємо перевірку при завантаженні будь-якої сторінки
+document.addEventListener('DOMContentLoaded', updateNavigation);
