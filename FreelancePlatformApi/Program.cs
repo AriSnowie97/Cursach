@@ -28,4 +28,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5245";
+app.Run($"http://0.0.0.0:{port}");
