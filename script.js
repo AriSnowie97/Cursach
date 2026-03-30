@@ -52,3 +52,33 @@ async function createOrder(event) {
     }
 }
 loadOrders();
+
+// Функція для перевірки статусу входу
+function checkAuth() {
+    const user = localStorage.getItem('userName');
+    const authLink = document.querySelector('nav ul li:last-child a');
+
+    if (user && authLink) {
+        authLink.innerHTML = `Привіт, ${user} (Вихід)`;
+        authLink.href = "#";
+        authLink.onclick = () => {
+            localStorage.removeItem('userName');
+            location.reload();
+        };
+    }
+}
+
+// Обробка форми входу (якщо ми на сторінці login.html)
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.onsubmit = (e) => {
+        e.preventDefault();
+        // Імітуємо вхід для тебе, Аріно!
+        localStorage.setItem('userName', 'Аріна'); 
+        alert('Вітаємо в системі!');
+        window.location.href = 'index.html';
+    };
+}
+
+// Запускаємо перевірку при кожному завантаженні сторінки
+checkAuth();
