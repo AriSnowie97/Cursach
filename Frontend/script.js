@@ -1,15 +1,26 @@
 async function loadOrders() {
     const list = document.getElementById('ordersList');
-    
-    // ПРЕДОХРАНИТЕЛЬ: Если элемента списка нет на странице (например, мы на странице регистрации),
-    // просто выходим из функции и ничего не ломаем.
-    if (!list) return; 
+    if (!list) return;
+
+    // 1. СТАВИМ ЛОАДЕР-ПОДСКАЗКУ ПЕРЕД ЗАПРОСОМ
+    list.innerHTML = `
+        <div style="text-align: center; padding: 30px;">
+            <h3 style="color: #1a73e8;">⏳ Завантаження замовлень...</h3>
+            <p style="color: #666; font-size: 0.9em;">
+                (Сервер прокидається 😴<br>Це може зайняти 15-30 секунд. Будь ласка, зачекайте!)
+            </p>
+        </div>
+    `;
 
     try {
+        // Скрипт будет ждать на этой строчке, пока Railway просыпается
         const response = await fetch('https://cursach-production.up.railway.app/api/orders');
         const orders = await response.json();
         
+        // 2. ОТВЕТ ПРИШЕЛ! ОЧИЩАЕМ ЛОАДЕР
         list.innerHTML = ''; 
+        
+        // Рисуем карточки
         orders.forEach(order => {
             const card = `
                 <article class="card">
@@ -23,8 +34,7 @@ async function loadOrders() {
         });
     } catch (error) {
         console.error("Помилка завантаження:", error);
-        // Тут ошибка больше не выскочит, потому что мы проверили list в самом начале
-        list.innerHTML = `<p style="color:red">Не вдалося підключитися до сервера. Перевір консоль!</p>`;
+        list.innerHTML = `<p style="color:red; text-align:center;">Не вдалося підключитися до сервера. Перевір консоль!</p>`;
     }
 }
 
