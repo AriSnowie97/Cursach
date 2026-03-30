@@ -3,7 +3,7 @@ async function loadOrders() {
     
     try {
         // Стукаємо до нашого API (переконайся, що порт 5245 вірний)
-        const response = await fetch('http://localhost:5245/api/orders');
+        const response = await fetch('https://cursach-production-xxxx.up.railway.app/api/orders');
         const orders = await response.json();
         
         list.innerHTML = ''; // Очищуємо старе
