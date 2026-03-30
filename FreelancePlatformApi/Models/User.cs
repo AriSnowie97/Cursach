@@ -5,7 +5,7 @@ namespace FreelancePlatformApi.Models
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty; // ОСЬ ЦЕЙ РЯДОК НАЙГОЛОВНІШИЙ
         
         // Роль: "Customer" (Замовник) або "Freelancer" (Фрілансер)
         public string Role { get; set; } = string.Empty; 
