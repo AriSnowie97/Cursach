@@ -1,7 +1,11 @@
 async function loadOrders() {
     const list = document.getElementById('ordersList');
+    
+    // ПРЕДОХРАНИТЕЛЬ: Если элемента списка нет на странице (например, мы на странице регистрации),
+    // просто выходим из функции и ничего не ломаем.
+    if (!list) return; 
+
     try {
-        // Твоє реальне посилання з протоколом https://
         const response = await fetch('https://cursach-production.up.railway.app/api/orders');
         const orders = await response.json();
         
@@ -19,6 +23,7 @@ async function loadOrders() {
         });
     } catch (error) {
         console.error("Помилка завантаження:", error);
+        // Тут ошибка больше не выскочит, потому что мы проверили list в самом начале
         list.innerHTML = `<p style="color:red">Не вдалося підключитися до сервера. Перевір консоль!</p>`;
     }
 }
@@ -51,6 +56,8 @@ async function createOrder(event) {
         alert('Немає зв\'язку з бекендом!');
     }
 }
+
+// Запускаем загрузку ордеров (если списка нет, она тихо завершится благодаря предохранителю)
 loadOrders();
 
 // Функція для оновлення навігації залежно від статусу входу
@@ -59,67 +66,67 @@ function updateNavigation() {
     const authLink = document.querySelector('nav ul li:last-child a');
 
     if (userName && authLink) {
-        // Якщо Аріна ввійшла, показуємо вітання та кнопку виходу
         authLink.innerHTML = `👋 Привіт, ${userName} (Вийти)`;
-        authLink.href = "#"; // Щоб сторінка не перезавантажувалася просто так
+        authLink.href = "#"; 
         
         authLink.onclick = (e) => {
             e.preventDefault();
-            localStorage.removeItem('userName'); // Видаляємо ім'я з пам'яті
+            localStorage.removeItem('userName'); 
             alert('Ви вийшли з акаунту. До зустрічі!');
-            window.location.href = 'index.html'; // Повертаємо на головну
+            window.location.href = 'index.html'; 
         };
     }
 }
 
-// ОБРОБКА РЕЄСТРАЦІЇ
-const registerForm = document.getElementById('registerForm');
-if (registerForm) {
-    registerForm.onsubmit = (e) => {
-        e.preventDefault();
-        const name = document.getElementById('regName').value;
-        const email = document.getElementById('regEmail').value;
-        const password = document.getElementById('regPassword').value;
+// ВАЖНО: Ждем, пока загрузится весь HTML, и только потом ищем формы и вешаем обработчики
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Оновлюємо навігацію
+    updateNavigation();
 
-        // "Зберігаємо" користувача в пам'яті браузера
-        localStorage.setItem('savedEmail', email);
-        localStorage.setItem('savedPassword', password);
-        localStorage.setItem('savedName', name);
+    // ОБРОБКА РЕЄСТРАЦІЇ
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.onsubmit = (e) => {
+            e.preventDefault(); // Теперь это сработает, и страница не перезагрузится!
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
 
-        alert(`Чудово, ${name}! Акаунт створено. Тепер ви можете увійти.`);
-        window.location.href = 'login.html'; // Перекидаємо на вхід
-    };
-}
+            // "Зберігаємо" користувача в пам'яті браузера
+            localStorage.setItem('savedEmail', email);
+            localStorage.setItem('savedPassword', password);
+            localStorage.setItem('savedName', name);
 
-// ОБРОБКА ВХОДУ (ЛОГІН)
-const loginForm = document.getElementById('loginForm');
-if (loginForm) {
-    loginForm.onsubmit = (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+            alert(`Чудово, ${name}! Акаунт створено. Тепер ви можете увійти.`);
+            window.location.href = 'login.html'; // Перекидаємо на вхід
+        };
+    }
 
-        // Дістаємо дані з пам'яті
-        const savedEmail = localStorage.getItem('savedEmail');
-        const savedPassword = localStorage.getItem('savedPassword');
-        const savedName = localStorage.getItem('savedName') || 'Користувач';
+    // ОБРОБКА ВХОДУ (ЛОГІН)
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.onsubmit = (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-        // Якщо людина ще не реєструвалася (для тесту), пускаємо як "Аріна"
-        if (!savedEmail) {
-            localStorage.setItem('userName', 'Аріна'); 
-            alert('Успішний вхід! Вітаємо, Аріно.');
-            window.location.href = 'index.html';
-        } 
-        // Перевіряємо, чи збігаються пошта і пароль з тими, що ввели при реєстрації
-        else if (email === savedEmail && password === savedPassword) {
-            localStorage.setItem('userName', savedName); // Беремо ім'я, яке ввели при реєстрації
-            alert(`Успішний вхід! Вітаємо, ${savedName}.`);
-            window.location.href = 'index.html';
-        } else {
-            alert('Невірний логін або пароль!');
-        }
-    };
-}
+            const savedEmail = localStorage.getItem('savedEmail');
+            const savedPassword = localStorage.getItem('savedPassword');
+            const savedName = localStorage.getItem('savedName') || 'Користувач';
 
-// Викликаємо перевірку при завантаженні будь-якої сторінки
-document.addEventListener('DOMContentLoaded', updateNavigation);
+            if (!savedEmail) {
+                localStorage.setItem('userName', 'Аріна'); 
+                alert('Успішний вхід! Вітаємо, Аріно.');
+                window.location.href = 'index.html';
+            } 
+            else if (email === savedEmail && password === savedPassword) {
+                localStorage.setItem('userName', savedName); 
+                alert(`Успішний вхід! Вітаємо, ${savedName}.`);
+                window.location.href = 'index.html';
+            } else {
+                alert('Невірний логін або пароль!');
+            }
+        };
+    }
+});
