@@ -16,14 +16,30 @@
 
     <main class="container">
         
-        <section class="controls">
-            <button class="btn-update" onclick="loadOrders()">Оновити список</button>
-        </section>
-        
-        <section id="ordersList">
-            </section>
+        <section>
+            <h2>Створити нове замовлення</h2>
+            <form id="orderForm" onsubmit="createOrder(event)">
+                <fieldset>
+                    <legend>Деталі проєкту</legend>
 
-    </main>
+                    <label for="title">Назва проєкту:</label>
+                    <input type="text" id="title" required placeholder="Напр., Створити Telegram-бота Remindly для студентів">
+
+                    <label for="desc">Опис:</label>
+                    <textarea id="desc" rows="3" required placeholder="Що саме потрібно зробити?"></textarea>
+
+                    <label for="budget">Бюджет ($):</label>
+                    <input type="number" id="budget" required min="1" placeholder="500">
+
+                    <label for="deadline">Дедлайн:</label>
+                    <input type="date" id="deadline" required>
+                </fieldset>
+
+                <button type="submit">Опублікувати замовлення</button>
+            </form>
+        </section>
+
+        <hr style="border: 0; border-top: 1px solid #ddd; margin: 40px 0;">
 
     <footer>
         <div class="container" style="text-align: center; margin-top: 40px; color: #777;">
