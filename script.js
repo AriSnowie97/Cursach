@@ -1,13 +1,11 @@
 async function loadOrders() {
     const list = document.getElementById('ordersList');
-    
     try {
-        // ДОДАНО https:// на початку
-        const response = await fetch('cursach-production.up.railway.app/api/orders');
+        // Твоє реальне посилання з протоколом https://
+        const response = await fetch('https://cursach-production.up.railway.app/api/orders');
         const orders = await response.json();
         
         list.innerHTML = ''; 
-
         orders.forEach(order => {
             const card = `
                 <article class="card">
@@ -21,13 +19,12 @@ async function loadOrders() {
         });
     } catch (error) {
         console.error("Помилка завантаження:", error);
-        list.innerHTML = `<p style="color:red">Не вдалося підключитися до сервера. Перевір, чи запущено бекенд!</p>`;
+        list.innerHTML = `<p style="color:red">Не вдалося підключитися до сервера. Перевір консоль!</p>`;
     }
 }
 
 async function createOrder(event) {
     event.preventDefault();
-
     const newOrder = {
         title: document.getElementById('title').value,
         description: document.getElementById('desc').value,
@@ -38,22 +35,20 @@ async function createOrder(event) {
     };
 
     try {
-        // ТУТ ТЕЖ ЗАМІНИЛИ localhost НА РЕАЛЬНУ АДРЕСУ
-        const response = await fetch('cursach-production.up.railway.app/api/orders', {
+        const response = await fetch('https://cursach-production.up.railway.app/api/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newOrder)
         });
 
         if (response.ok) {
-            alert('Замовлення успішно створено!');
-            window.location.href = 'index.html'; // Перекидаємо на головну, щоб побачити результат
+            alert('Замовлення створено!');
+            window.location.href = 'index.html';
         } else {
-            alert('Помилка сервера. Замовлення не створено.');
+            alert('Помилка сервера.');
         }
     } catch (error) {
         alert('Немає зв\'язку з бекендом!');
     }
 }
-
 loadOrders();
