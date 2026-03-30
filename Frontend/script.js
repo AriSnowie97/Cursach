@@ -72,15 +72,52 @@ function updateNavigation() {
     }
 }
 
-// Обробка форми на сторінці login.html
+// ОБРОБКА РЕЄСТРАЦІЇ
+const registerForm = document.getElementById('registerForm');
+if (registerForm) {
+    registerForm.onsubmit = (e) => {
+        e.preventDefault();
+        const name = document.getElementById('regName').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+
+        // "Зберігаємо" користувача в пам'яті браузера
+        localStorage.setItem('savedEmail', email);
+        localStorage.setItem('savedPassword', password);
+        localStorage.setItem('savedName', name);
+
+        alert(`Чудово, ${name}! Акаунт створено. Тепер ви можете увійти.`);
+        window.location.href = 'login.html'; // Перекидаємо на вхід
+    };
+}
+
+// ОБРОБКА ВХОДУ (ЛОГІН)
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.onsubmit = (e) => {
         e.preventDefault();
-        // Зберігаємо твоє ім'я, Аріно, у локальне сховище браузера
-        localStorage.setItem('userName', 'Аріна'); 
-        alert('Успішний вхід! Вітаємо, Аріно.');
-        window.location.href = 'index.html'; 
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        // Дістаємо дані з пам'яті
+        const savedEmail = localStorage.getItem('savedEmail');
+        const savedPassword = localStorage.getItem('savedPassword');
+        const savedName = localStorage.getItem('savedName') || 'Користувач';
+
+        // Якщо людина ще не реєструвалася (для тесту), пускаємо як "Аріна"
+        if (!savedEmail) {
+            localStorage.setItem('userName', 'Аріна'); 
+            alert('Успішний вхід! Вітаємо, Аріно.');
+            window.location.href = 'index.html';
+        } 
+        // Перевіряємо, чи збігаються пошта і пароль з тими, що ввели при реєстрації
+        else if (email === savedEmail && password === savedPassword) {
+            localStorage.setItem('userName', savedName); // Беремо ім'я, яке ввели при реєстрації
+            alert(`Успішний вхід! Вітаємо, ${savedName}.`);
+            window.location.href = 'index.html';
+        } else {
+            alert('Невірний логін або пароль!');
+        }
     };
 }
 
