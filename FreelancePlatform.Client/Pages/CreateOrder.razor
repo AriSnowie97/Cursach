@@ -1,0 +1,61 @@
+@page "/create-order"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Створити замовлення — Біржа</PageTitle>
+
+<main class="container">
+    <section>
+        <h2>Нове замовлення</h2>
+        <form @onsubmit="CreateNewOrder">
+            <fieldset>
+                <legend>Деталі проєкту</legend>
+
+                <label for="title">Назва проєкту:</label>
+                <input type="text" id="title" @bind="orderModel.Title" required placeholder="Що потрібно зробити?">
+
+                <label for="desc">Опис:</label>
+                <textarea id="desc" rows="4" @bind="orderModel.Description" required placeholder="Опишіть деталі завдання..."></textarea>
+
+                <label for="budget">Бюджет ($):</label>
+                <input type="number" id="budget" @bind="orderModel.Budget" required min="1">
+
+                <label for="deadline">Дедлайн:</label>
+                <input type="date" id="deadline" @bind="orderModel.Deadline" required>
+            </fieldset>
+
+            <button type="submit">Опублікувати замовлення</button>
+        </form>
+    </section>
+</main>
+
+@code {
+    // Создаем пустой заказ (по умолчанию дедлайн через 7 дней)
+    private Order orderModel = new Order { Deadline = DateTime.Now.AddDays(7) };
+
+    private async Task CreateNewOrder()
+    {
+        orderModel.Status = "Open";
+        orderModel.CustomerId = 1; // Пока ставим 1 (потом привяжем к авторизации)
+
+        // Отправляем данные на твой бэкенд (локальный)
+        var response = await Http.PostAsJsonAsync("http://localhost:5245/api/orders", orderModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Если сервер сказал ОК, перекидываем пользователя на главную страницу
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    // Класс, описывающий заказ
+    public class Order
+    {
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public decimal Budget { get; set; }
+        public DateTime Deadline { get; set; }
+        public string Status { get; set; } = "";
+        public int CustomerId { get; set; }
+    }
+}

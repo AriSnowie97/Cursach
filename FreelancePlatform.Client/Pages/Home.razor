@@ -1,0 +1,60 @@
+﻿@page "/"
+@inject HttpClient Http
+
+<PageTitle>Всі замовлення — Біржа</PageTitle>
+
+<main class="container">
+    <section>
+        <h2>Активні проєкти</h2>
+        <button class="btn-update" @onclick="LoadOrders">Оновити список</button>
+        
+        <div id="ordersList">
+            @if (orders == null)
+            {
+                <div style="text-align: center; padding: 30px;">
+                    <h3 style="color: #1a73e8;">⏳ Завантаження замовлень...</h3>
+                </div>
+            }
+            else
+            {
+                @foreach (var order in orders)
+                {
+                    <article class="card">
+                        <h3>@order.Title</h3>
+                        <p>@order.Description</p>
+                        <p class="budget">💰 Бюджет: $@order.Budget</p>
+                        <span class="status-badge">@order.Status</span>
+                    </article>
+                }
+            }
+        </div>
+    </section>
+</main>
+
+@code {
+    // Жодного JavaScript! Усі змінні пишемо на C#
+    private List<Order>? orders;
+
+    // Цей метод автоматично запускається при відкритті сторінки (як наш будильник раніше)
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrders();
+    }
+
+    // А ОСЬ І ВІН — твій метод!
+    private async Task LoadOrders()
+    {
+        // Стукаємося до локального бекенду!
+        orders = await Http.GetFromJsonAsync<List<Order>>("http://localhost:5245/api/orders");
+    }
+
+    // Описуємо структуру замовлення, щоб Blazor розумів, які дані прийдуть
+    public class Order
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public decimal Budget { get; set; }
+        public string Status { get; set; }
+    }
+}
