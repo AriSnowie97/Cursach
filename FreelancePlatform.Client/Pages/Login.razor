@@ -1,0 +1,61 @@
+@page "/login"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Вхід — Біржа</PageTitle>
+
+<main class="container">
+    <section class="auth-section">
+        <h2>Вхід в систему</h2>
+        
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div style="color: red; margin-bottom: 15px;">
+                @errorMessage
+            </div>
+        }
+
+        <form @onsubmit="HandleLogin">
+            <fieldset>
+                <label for="email">Email:</label>
+                <input type="email" id="email" @bind="loginModel.Email" required placeholder="Ваш email">
+
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" @bind="loginModel.Password" required placeholder="Ваш пароль">
+            </fieldset>
+
+            <button type="submit">Увійти</button>
+        </form>
+    </section>
+</main>
+
+@code {
+    private LoginRequest loginModel = new LoginRequest();
+    private string errorMessage = "";
+
+    private async Task HandleLogin()
+    {
+        errorMessage = ""; // Очищаємо помилку перед новим запитом
+
+        // Відправляємо дані на бекенд
+        // (Якщо ти зараз тестуєш локально, залиш localhost. Якщо бекенд запущено на Railway - встав його посилання)
+        var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/auth/login", loginModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Якщо логін успішний, перекидаємо на головну
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            // Якщо помилка (наприклад, невірний пароль)
+            errorMessage = "Невірний логін або пароль";
+        }
+    }
+
+    public class LoginRequest
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+}

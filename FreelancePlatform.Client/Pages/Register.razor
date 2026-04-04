@@ -1,0 +1,66 @@
+@page "/register"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Реєстрація — Біржа</PageTitle>
+
+<main class="container">
+    <section class="auth-section">
+        <h2>Створення акаунту</h2>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div style="color: red; margin-bottom: 15px;">
+                @errorMessage
+            </div>
+        }
+
+        <form @onsubmit="HandleRegister">
+            <fieldset>
+                <label for="name">Ім'я:</label>
+                <input type="text" id="name" @bind="registerModel.Name" required placeholder="Ваше ім'я">
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" @bind="registerModel.Email" required placeholder="Ваш email">
+
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" @bind="registerModel.Password" required placeholder="Придумайте пароль">
+            </fieldset>
+
+            <button type="submit">Зареєструватися</button>
+            <p style="margin-top: 15px; text-align: center;">
+                Вже є акаунт? <a href="login">Увійти</a>
+            </p>
+        </form>
+    </section>
+</main>
+
+@code {
+    private RegisterRequest registerModel = new RegisterRequest();
+    private string errorMessage = "";
+
+    private async Task HandleRegister()
+    {
+        errorMessage = ""; 
+
+        // Відправляємо дані на бекенд (зміни localhost на railway, якщо зараз тестуєш з ним)
+        var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/users", registerModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Якщо все ок, перекидаємо на сторінку входу
+            Navigation.NavigateTo("/login");
+        }
+        else
+        {
+            errorMessage = "Помилка при реєстрації. Можливо, такий email вже існує.";
+        }
+    }
+
+    public class RegisterRequest
+    {
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+}
