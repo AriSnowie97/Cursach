@@ -44,8 +44,7 @@
     // А ОСЬ І ВІН — твій метод!
     private async Task LoadOrders()
     {
-        // Стукаємося до локального бекенду!
-        orders = await Http.GetFromJsonAsync<List<Order>>("http://localhost:5245/api/orders");
+        orders = await Http.GetFromJsonAsync<List<Order>>("https://cursach-production.up.railway.app/api/orders");
     }
 
     // Описуємо структуру замовлення, щоб Blazor розумів, які дані прийдуть

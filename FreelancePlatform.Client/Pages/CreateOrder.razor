@@ -39,7 +39,7 @@
         orderModel.CustomerId = 1; // Пока ставим 1 (потом привяжем к авторизации)
 
         // Отправляем данные на твой бэкенд (локальный)
-        var response = await Http.PostAsJsonAsync("http://localhost:5245/api/orders", orderModel);
+        var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/orders", orderModel);
 
         if (response.IsSuccessStatusCode)
         {

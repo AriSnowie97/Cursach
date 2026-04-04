@@ -26,6 +26,7 @@ app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
+app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 app.MapControllers();
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5245";
