@@ -1,0 +1,30 @@
+name: Deploy Blazor to GitHub Pages
+
+# Кажемо роботу запускатися тільки коли ми пушимо код у гілку main
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-to-github-pages:
+    runs-on: ubuntu-latest
+    steps:
+    # 1. Робот викачує твій код
+    - uses: actions/checkout@v3
+
+    # 2. Встановлює середовище .NET (вказано версію 8.0, якщо в тебе 7.0 - зміни цифру)
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x' 
+
+    # 3. Робот сам виконує команду publish, яку ти раніше писав вручну
+    - name: Publish .NET Project
+      run: dotnet publish FreelancePlatform.Client/FreelancePlatform.Client.csproj -c Release -o release --nologo
+
+    # 4. Робот сам бере готові файли і закидає їх у гілку gh-pages!
+    - name: Commit wwwroot to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./release/wwwroot
