@@ -43,6 +43,7 @@
 }
 
 @code {
+    private bool showCookieNotice = true;
     protected override void OnInitialized()
     {
         // Підписуємося на зміни
@@ -61,6 +62,10 @@
         UserState.LastName = ""; // Очищаємо і прізвище при виході
         UserState.Role = "";
         Navigation.NavigateTo("");
+
+        // Видаляємо куку при виході
+        await JS.InvokeVoidAsync("cookieFunctions.deleteCookie", "user_session");
+        
         UserState.NotifyStateChanged();
         Navigation.NavigateTo("");
     }
