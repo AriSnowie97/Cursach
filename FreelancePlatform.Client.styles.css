@@ -160,3 +160,30 @@ main[b-ug27xfn9v4] {
         overflow-y: auto;
     }
 }
+
+/* Стиль для посилання на профіль */
+.profile-link[b-enq8khh6k8] {
+    font-weight: bold;
+    color: #1a73e8 !important;
+    margin-right: 15px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: rgba(26, 115, 232, 0.1); /* Легкий блакитний фон */
+    text-decoration: none;
+}
+
+.profile-link:hover[b-enq8khh6k8] {
+    background: rgba(26, 115, 232, 0.2);
+}
+
+/* Стиль для кнопки виходу */
+.logout-btn[b-enq8khh6k8] {
+    cursor: pointer;
+    color: #ff6b6b !important;
+    text-decoration: underline;
+    font-size: 0.9rem;
+}
+
+.logout-btn:hover[b-enq8khh6k8] {
+    color: #ff4d4d !important;
+}
