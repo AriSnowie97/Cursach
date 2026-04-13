@@ -30,7 +30,7 @@
                 
                 <div class="profile-actions">
                     <button class="btn-secondary">Змінити пароль</button>
-                    <button class="btn-danger" @onclick="Logout">Вийти з акаунту</button>
+                    <button class="btn btn-outline-danger" @onclick="HandleLogout">Вихід</button>
                 </div>
             </div>
         }
@@ -42,11 +42,19 @@
 </main>
 
 @code {
-    private void Logout()
+    private async Task HandleLogout()
     {
+        // Очищаем состояние
         UserState.IsLoggedIn = false;
         UserState.Name = "";
+        UserState.LastName = "";
         UserState.Role = "";
+        
+        // Удаляем куки через JS
+        await JS.InvokeVoidAsync("cookieFunctions.deleteCookie", "user_session");
+        
+        // Уведомляем систему и уходим на главную
+        UserState.NotifyStateChanged();
         Navigation.NavigateTo("/");
     }
 }

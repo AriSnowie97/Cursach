@@ -81,3 +81,30 @@
         overflow-y: auto;
     }
 }
+
+/* Стиль для посилання на профіль */
+.profile-link {
+    font-weight: bold;
+    color: #1a73e8 !important;
+    margin-right: 15px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: rgba(26, 115, 232, 0.1); /* Легкий блакитний фон */
+    text-decoration: none;
+}
+
+.profile-link:hover {
+    background: rgba(26, 115, 232, 0.2);
+}
+
+/* Стиль для кнопки виходу */
+.logout-btn {
+    cursor: pointer;
+    color: #ff6b6b !important;
+    text-decoration: underline;
+    font-size: 0.9rem;
+}
+
+.logout-btn:hover {
+    color: #ff4d4d !important;
+}

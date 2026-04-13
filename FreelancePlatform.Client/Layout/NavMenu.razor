@@ -20,12 +20,12 @@
                 {
                     <li><NavLink href="my-proposals">Мої пропозиції</NavLink></li>
                 }
-                @* Додаємо прізвище поруч із ім'ям у дужках *@
-                <li>
-                    <a style="cursor:pointer; color: #ff6b6b;" @onclick="HandleLogout">
-                        Вихід (@UserState.Name @UserState.LastName)
-                    </a>
-                </li>
+                @* Привітання, яке веде в профіль *@
+                    <li>
+                        <NavLink href="profile" class="profile-link">
+                            👋 Привіт, @UserState.Name!
+                        </NavLink>
+                    </li>
             }
             else
             {
