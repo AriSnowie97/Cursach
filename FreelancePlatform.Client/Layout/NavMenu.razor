@@ -1,4 +1,5 @@
 ﻿@using FreelancePlatform.Client
+@implements IDisposable
 @inject NavigationManager Navigation
 
 <header>
@@ -34,12 +35,25 @@
 </header>
 
 @code {
+    protected override void OnInitialized()
+    {
+        // Підписуємося на зміни
+        UserState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        // Відписуємося, коли меню знищується
+        UserState.OnChange -= StateHasChanged;
+    }
     private void HandleLogout()
     {
         UserState.IsLoggedIn = false;
         UserState.Name = "";
         UserState.LastName = ""; // Очищаємо і прізвище при виході
         UserState.Role = "";
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
+        UserState.NotifyStateChanged();
+        Navigation.NavigateTo("");
     }
 }

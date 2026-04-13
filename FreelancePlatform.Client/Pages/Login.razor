@@ -43,7 +43,15 @@
 
         if (response.IsSuccessStatusCode)
         {
-            // Якщо логін успішний, перекидаємо на головну
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            
+            UserState.IsLoggedIn = true;
+            UserState.Name = result.Name;
+            UserState.Role = result.Role;
+            
+            // КРИЧИМО, ЩО МИ УВІЙШЛИ!
+            UserState.NotifyStateChanged(); 
+
             Navigation.NavigateTo("");
         }
         else
