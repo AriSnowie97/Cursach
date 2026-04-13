@@ -1,6 +1,8 @@
 ﻿@using FreelancePlatform.Client
 @implements IDisposable
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
+
 
 <header>
     <h1>Біржа фрілансу 🚀</h1>
@@ -55,18 +57,18 @@
         // Відписуємося, коли меню знищується
         UserState.OnChange -= StateHasChanged;
     }
-    private void HandleLogout()
+    // Додаємо слово async та повертаємо Task замість void
+    private async Task HandleLogout() 
     {
         UserState.IsLoggedIn = false;
         UserState.Name = "";
-        UserState.LastName = ""; // Очищаємо і прізвище при виході
+        UserState.LastName = "";
         UserState.Role = "";
-        Navigation.NavigateTo("");
-
-        // Видаляємо куку при виході
+        
+        // Тепер це спрацює, бо ми додали @inject JS вгорі
         await JS.InvokeVoidAsync("cookieFunctions.deleteCookie", "user_session");
         
         UserState.NotifyStateChanged();
-        Navigation.NavigateTo("");
+        Navigation.NavigateTo("/");
     }
 }
