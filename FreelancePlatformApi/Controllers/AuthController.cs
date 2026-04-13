@@ -27,7 +27,7 @@ public class AuthController : ControllerBase
         }
 
         // Повертаємо ім'я конкретного користувача (Аріна, Артем тощо)
-        return Ok(new { name = user.Name, email = user.Email, role = user.Role });
+        return Ok(new { name = user.Name, lastName = user.LastName, email = user.Email, role = user.Role });
     }
 }
 

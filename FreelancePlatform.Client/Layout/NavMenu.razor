@@ -17,7 +17,12 @@
                 {
                     <li><NavLink href="my-proposals">Мої пропозиції</NavLink></li>
                 }
-                <li><a style="cursor:pointer; color: #ff6b6b;" @onclick="HandleLogout">Вихід (@UserState.Name)</a></li>
+                @* Додаємо прізвище поруч із ім'ям у дужках *@
+                <li>
+                    <a style="cursor:pointer; color: #ff6b6b;" @onclick="HandleLogout">
+                        Вихід (@UserState.Name @UserState.LastName)
+                    </a>
+                </li>
             }
             else
             {
@@ -33,6 +38,7 @@
     {
         UserState.IsLoggedIn = false;
         UserState.Name = "";
+        UserState.LastName = ""; // Очищаємо і прізвище при виході
         UserState.Role = "";
         Navigation.NavigateTo("/");
     }

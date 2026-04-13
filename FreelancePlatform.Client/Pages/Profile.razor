@@ -1,0 +1,52 @@
+@page "/profile"
+@using FreelancePlatform.Client
+@inject NavigationManager Navigation
+
+<PageTitle>Мій профіль — Біржа</PageTitle>
+
+<main class="container">
+    <section class="profile-card">
+        <h2>Налаштування профілю</h2>
+        
+        @if (UserState.IsLoggedIn)
+        {
+            <div class="profile-info">
+                <div class="info-group">
+                    <label>Ваше ім'я:</label>
+                    <p><strong>@UserState.Name</strong></p>
+                </div>
+                
+                <div class="info-group">
+                    <label>Ваше прізвище:</label>
+                    <p><strong>@UserState.LastName</strong></p>
+                </div>
+                
+                <div class="info-group">
+                    <label>Ваша роль:</label>
+                    <p><span>@(UserState.Role == "Customer" ? "Замовник" : "Фрілансер")</span></p>
+                </div>
+
+                <hr />
+                
+                <div class="profile-actions">
+                    <button class="btn-secondary">Змінити пароль</button>
+                    <button class="btn-danger" @onclick="Logout">Вийти з акаунту</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>Будь ласка, <a href="login">увійдіть</a>, щоб переглянути профіль.</p>
+        }
+    </section>
+</main>
+
+@code {
+    private void Logout()
+    {
+        UserState.IsLoggedIn = false;
+        UserState.Name = "";
+        UserState.Role = "";
+        Navigation.NavigateTo("/");
+    }
+}
