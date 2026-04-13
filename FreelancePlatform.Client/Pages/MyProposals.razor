@@ -1,0 +1,82 @@
+@page "/my-proposals"
+@using FreelancePlatform.Client
+@inject HttpClient Http
+
+<PageTitle>Мої пропозиції — Біржа</PageTitle>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Мої відгуки на замовлення</h2>
+
+    @if (!UserState.IsLoggedIn || UserState.Role != "Freelancer")
+    {
+        <div class="alert alert-warning">
+            Ця сторінка доступна лише для авторизованих фрілансерів. Будь ласка, увійдіть в систему.
+        </div>
+    }
+    else if (proposals == null)
+    {
+        <div class="text-center">
+            <button class="btn btn-primary" disabled>
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span role="status">Завантаження...</span>
+            </button>
+        </div>
+    }
+    else if (proposals.Length == 0)
+    {
+        <div class="alert alert-info">
+            Ви ще не залишили жодної пропозиції до замовлень.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var prop in proposals)
+            {
+                <div class="col-12 mb-3">
+                    <div class="card shadow-sm border-primary" style="border-radius: 10px;">
+                        <div class="card-body">
+                            <h5 class="card-title">Відгук на замовлення #@prop.OrderId</h5>
+                            <p class="card-text text-muted">@prop.CoverLetter</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="text-success fw-bold">💰 Ваша ціна: $@prop.Price</span>
+                                <span class="badge bg-primary rounded-pill">Очікує відповіді</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private Proposal[]? proposals;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Перевіряємо, чи це фрілансер
+        if (UserState.IsLoggedIn && UserState.Role == "Freelancer")
+        {
+            // ТУТ БУДЕ ЗАПИТ ДО БЕКЕНДУ:
+            // proposals = await Http.GetFromJsonAsync<Proposal[]>($"https://cursach-production.up.railway.app/api/proposals/user/{UserState.Name}");
+
+            // А поки бекенд ще не налаштований на віддачу пропозицій, 
+            // я додав тестові дані (заглушку), щоб ти одразу побачила красу:
+            proposals = new[]
+            {
+                new Proposal { OrderId = 1, CoverLetter = "Вітаю! Я маю великий досвід у дизайні лендінгів у Figma. Готовий виконати ваше замовлення швидко та якісно. Врахую всі побажання щодо кольорової гами.", Price = 150 },
+                new Proposal { OrderId = 3, CoverLetter = "Привіт! Напишу курсову роботу на C# з використанням патернів ООП. Зроблю гарний інтерфейс на Blazor, як ви і просили.", Price = 45 }
+            };
+        }
+    }
+
+    // Тимчасова модель для відображення
+    public class Proposal
+    {
+        public int OrderId { get; set; }
+        public string CoverLetter { get; set; } = "";
+        public decimal Price { get; set; }
+    }
+}
