@@ -20,6 +20,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers();
 
 var app = builder.Build();
+// Автоматично оновлюємо базу даних при запуску сервера
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 // 2. Вмикаємо CORS (обов'язково ПЕРЕД MapControllers)
 app.UseCors("AllowAll");
