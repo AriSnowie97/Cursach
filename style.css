@@ -216,3 +216,44 @@ form button:hover {
 .login-card button:hover {
     background-color: #219150;
 }
+
+/* Контейнер для повідомлення */
+.cookie-notice {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333333;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px; /* Робимо круглі краї для сучасного вигляду */
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 10000;
+    font-family: sans-serif;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.5s ease-out;
+}
+
+/* Кнопка "Зрозуміло" */
+.cookie-notice button {
+    background: #1a73e8; /* Фірмовий синій Google */
+    color: white;
+    border: none;
+    padding: 6px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.cookie-notice button:hover {
+    background: #1557b0;
+}
+
+/* Анімація появи знизу */
+@keyframes slideUp {
+    from { bottom: -100px; opacity: 0; }
+    to { bottom: 20px; opacity: 1; }
+}
