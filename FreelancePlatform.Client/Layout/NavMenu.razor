@@ -1,86 +1,39 @@
 ﻿@using FreelancePlatform.Client
 @inject NavigationManager Navigation
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Біржа Фрілансу</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
+<header>
+    <h1>Біржа фрілансу 🚀</h1>
+    <nav>
+        <ul>
+            <li><NavLink href="" Match="NavLinkMatch.All">Всі замовлення</NavLink></li>
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        @* Головна сторінка доступна всім *@
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Всі замовлення
-            </NavLink>
-        </div>
-
-        @if (UserState.IsLoggedIn)
-        {
-            @* Меню для ЗАМОВНИКА *@
-            @if (UserState.Role == "Customer")
+            @if (UserState.IsLoggedIn)
             {
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="create-order">
-                        <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Створити замовлення
-                    </NavLink>
-                </div>
+                @if (UserState.Role == "Customer")
+                {
+                    <li><NavLink href="create-order">Створити замовлення</NavLink></li>
+                }
+                else if (UserState.Role == "Freelancer")
+                {
+                    <li><NavLink href="my-proposals">Мої пропозиції</NavLink></li>
+                }
+                <li><a style="cursor:pointer; color: #ff6b6b;" @onclick="HandleLogout">Вихід (@UserState.Name)</a></li>
             }
-            @* Меню для ФРІЛАНСЕРА *@
-            else if (UserState.Role == "Freelancer")
+            else
             {
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="my-proposals">
-                        <span class="bi bi-list-stars-nav-menu" aria-hidden="true"></span> Мої пропозиції
-                    </NavLink>
-                </div>
+                <li><NavLink href="login">Вхід</NavLink></li>
+                <li><NavLink href="register">Реєстрація</NavLink></li>
             }
-
-            @* Кнопка виходу для залогінених користувачів *@
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" style="cursor:pointer" @onclick="HandleLogout">
-                    <span class="bi bi-box-arrow-right-nav-menu" aria-hidden="true"></span> Вихід (@UserState.Name)
-                </NavLink>
-            </div>
-        }
-        else
-        {
-            @* Кнопки для тих, хто ще не увійшов *@
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="login">
-                    <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Вхід
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="register">
-                    <span class="bi bi-person-plus-fill-nav-menu" aria-hidden="true"></span> Реєстрація
-                </NavLink>
-            </div>
-        }
+        </ul>
     </nav>
-</div>
+</header>
 
 @code {
-    private bool collapseNavMenu = true;
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
-
     private void HandleLogout()
     {
-        // Очищаємо стан користувача при виході
         UserState.IsLoggedIn = false;
         UserState.Name = "";
         UserState.Role = "";
-        
-        // Перенаправляємо на головну
         Navigation.NavigateTo("/");
     }
 }
