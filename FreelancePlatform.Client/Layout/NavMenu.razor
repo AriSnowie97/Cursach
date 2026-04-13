@@ -34,6 +34,14 @@
     </nav>
 </header>
 
+@if (showCookieNotice)
+{
+    <div class="cookie-notice">
+        <span>🍪 Ми використовуємо куки для вашої зручної авторизації.</span>
+        <button @onclick="() => showCookieNotice = false">Зрозуміло</button>
+    </div>
+}
+
 @code {
     protected override void OnInitialized()
     {
