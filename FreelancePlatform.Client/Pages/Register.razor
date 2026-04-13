@@ -25,6 +25,12 @@
 
                 <label for="password">Пароль:</label>
                 <input type="password" id="password" @bind="registerModel.Password" required placeholder="Придумайте пароль">
+
+            <label for="role">Хто ви?</label>
+                <select id="role" @bind="registerModel.Role" required>
+                    <option value="Customer">Замовник (Шукаю фрілансера)</option>
+                    <option value="Freelancer">Фрілансер (Шукаю роботу)</option>
+                </select>
             </fieldset>
 
             <button type="submit">Зареєструватися</button>
@@ -62,5 +68,6 @@
         public string Name { get; set; } = "";
         public string Email { get; set; } = "";
         public string Password { get; set; } = "";
+        public string Role { get; set; } = "Customer"; // За замовчуванням - замовник
     }
 }
