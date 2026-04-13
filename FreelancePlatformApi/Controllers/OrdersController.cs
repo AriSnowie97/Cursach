@@ -1,7 +1,7 @@
-using FreelancePlatformApi.Data;
-using FreelancePlatformApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using FreelancePlatformApi.Data;
+using FreelancePlatformApi.Models;
 
 namespace FreelancePlatformApi.Controllers
 {
@@ -16,21 +16,20 @@ namespace FreelancePlatformApi.Controllers
             _context = context;
         }
 
-        // GET: api/orders (Отримати всі замовлення)
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
-        {
-            return await _context.Orders.ToListAsync();
-        }
-
-        // POST: api/orders (Створити нове замовлення)
+        // POST: api/orders (Створення нового замовлення)
         [HttpPost]
         public async Task<ActionResult<Order>> CreateOrder(Order order)
         {
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
-
             return Ok(order);
+        }
+
+        // GET: api/orders (Отримання ВСІХ замовлень для головної сторінки)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+        {
+            return await _context.Orders.ToListAsync();
         }
     }
 }

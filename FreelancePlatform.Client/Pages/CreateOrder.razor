@@ -1,61 +1,81 @@
 @page "/create-order"
+@using FreelancePlatform.Client
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
 <PageTitle>Створити замовлення — Біржа</PageTitle>
 
-<main class="container">
-    <section>
-        <h2>Нове замовлення</h2>
-        <form @onsubmit="CreateNewOrder">
-            <fieldset>
-                <legend>Деталі проєкту</legend>
+<div class="container mt-4">
+    <h2 class="mb-4">Створити нове замовлення 📝</h2>
 
-                <label for="title">Назва проєкту:</label>
-                <input type="text" id="title" @bind="orderModel.Title" required placeholder="Що потрібно зробити?">
+    @if (!UserState.IsLoggedIn || UserState.Role != "Customer")
+    {
+        <div class="alert alert-warning">
+            Ця сторінка доступна лише для Замовників. Будь ласка, увійдіть під відповідним акаунтом.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm p-4" style="max-width: 600px;">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Назва проєкту:</label>
+                <input type="text" class="form-control" @bind="newOrder.Title" placeholder="Наприклад: Зробити дизайн лендінгу" />
+            </div>
 
-                <label for="desc">Опис:</label>
-                <textarea id="desc" rows="4" @bind="orderModel.Description" required placeholder="Опишіть деталі завдання..."></textarea>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Опис завдання:</label>
+                <textarea class="form-control" rows="5" @bind="newOrder.Description" placeholder="Опишіть деталі, вимоги та терміни..."></textarea>
+            </div>
 
-                <label for="budget">Бюджет ($):</label>
-                <input type="number" id="budget" @bind="orderModel.Budget" required min="1">
+            <div class="mb-4">
+                <label class="form-label fw-bold">Бюджет ($):</label>
+                <input type="number" class="form-control" @bind="newOrder.Price" />
+            </div>
 
-                <label for="deadline">Дедлайн:</label>
-                <input type="date" id="deadline" @bind="orderModel.Deadline" required>
-            </fieldset>
-
-            <button type="submit">Опублікувати замовлення</button>
-        </form>
-    </section>
-</main>
+            <button class="btn btn-primary w-100" @onclick="SubmitOrder">
+                🚀 Опублікувати замовлення
+            </button>
+            
+            @if (showError)
+            {
+                <div class="alert alert-danger mt-3">Сталася помилка при збереженні. Перевірте консоль (F12).</div>
+            }
+        </div>
+    }
+</div>
 
 @code {
-    // Создаем пустой заказ (по умолчанию дедлайн через 7 дней)
-    private Order orderModel = new Order { Deadline = DateTime.Now.AddDays(7) };
+    private OrderModel newOrder = new OrderModel();
+    private bool showError = false;
 
-    private async Task CreateNewOrder()
+    private async Task SubmitOrder()
     {
-        orderModel.Status = "Open";
-        orderModel.CustomerId = 1; // Пока ставим 1 (потом привяжем к авторизации)
-
-        // Отправляем данные на твой бэкенд (локальный)
-        var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/orders", orderModel);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            // Если сервер сказал ОК, перекидываем пользователя на главную страницу
-            Navigation.NavigateTo("/");
+            // Відправляємо дані на наш новий контролер
+            var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/orders", newOrder);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                // Якщо все добре, перекидаємо користувача на головну сторінку
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                showError = true;
+            }
+        }
+        catch
+        {
+            showError = true;
         }
     }
 
-    // Класс, описывающий заказ
-    public class Order
+    // Модель даних (має збігатися з моделлю на бекенді!)
+    public class OrderModel
     {
         public string Title { get; set; } = "";
         public string Description { get; set; } = "";
-        public decimal Budget { get; set; }
-        public DateTime Deadline { get; set; }
-        public string Status { get; set; } = "";
-        public int CustomerId { get; set; }
+        public decimal Budget { get; set; } // УВАГА: якщо в БД у тебе Budget, зміни тут Price на Budget!
     }
 }
