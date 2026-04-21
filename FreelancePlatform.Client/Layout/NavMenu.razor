@@ -45,30 +45,17 @@
 }
 
 @code {
-    private bool showCookieNotice = true;
-    protected override void OnInitialized()
-    {
-        // Підписуємося на зміни
-        UserState.OnChange += StateHasChanged;
-    }
+    private bool isCheckingAuth = true;
 
-    public void Dispose()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Відписуємося, коли меню знищується
-        UserState.OnChange -= StateHasChanged;
-    }
-    // Додаємо слово async та повертаємо Task замість void
-    private async Task HandleLogout() 
-    {
-        UserState.IsLoggedIn = false;
-        UserState.Name = "";
-        UserState.LastName = "";
-        UserState.Role = "";
-        
-        // Тепер це спрацює, бо ми додали @inject JS вгорі
-        await JS.InvokeVoidAsync("cookieFunctions.deleteCookie", "user_session");
-        
-        UserState.NotifyStateChanged();
-        Navigation.NavigateTo("/");
+        // Читаємо куки тільки один раз, коли браузер вже готовий до роботи з JavaScript
+        if (firstRender)
+        {
+            await UserState.LoadFromCookies(JS);
+            
+            isCheckingAuth = false; // Вимикаємо "крутилку" завантаження
+            StateHasChanged(); // ПРИМУСОВО кажемо сайту перемалювати себе з новими даними!
+        }
     }
 }
