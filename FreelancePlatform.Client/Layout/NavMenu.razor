@@ -45,17 +45,28 @@
 }
 
 @code {
-    private bool isCheckingAuth = true;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnInitialized()
     {
-        // Читаємо куки тільки один раз, коли браузер вже готовий до роботи з JavaScript
-        if (firstRender)
-        {
-            await UserState.LoadFromCookies(JS);
-            
-            isCheckingAuth = false; // Вимикаємо "крутилку" завантаження
-            StateHasChanged(); // ПРИМУСОВО кажемо сайту перемалювати себе з новими даними!
-        }
+        // Підписуємося на оновлення профілю
+        UserState.OnChange += StateHasChanged;
+    }
+
+    // ОСЬ ВІН! Той самий метод, якого вимагає система
+    public void Dispose()
+    {
+        UserState.OnChange -= StateHasChanged;
+    }
+
+    private async Task HandleLogout()
+    {
+        UserState.IsLoggedIn = false;
+        UserState.Name = "";
+        UserState.LastName = "";
+        UserState.Role = "";
+        
+        await JS.InvokeVoidAsync("cookieFunctions.deleteCookie", "user_session");
+        
+        UserState.NotifyStateChanged();
+        Navigation.NavigateTo("/");
     }
 }
