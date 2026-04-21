@@ -45,19 +45,20 @@
 }
 
 @code {
+    // ДОДАЙ ОСЬ ЦЕЙ РЯДОК:
+    private bool showCookieNotice = true;
+
     protected override void OnInitialized()
     {
-        // Підписуємося на оновлення профілю
         UserState.OnChange += StateHasChanged;
     }
 
-    // ОСЬ ВІН! Той самий метод, якого вимагає система
     public void Dispose()
     {
         UserState.OnChange -= StateHasChanged;
     }
-
-    private async Task HandleLogout()
+    
+        private async Task HandleLogout()
     {
         UserState.IsLoggedIn = false;
         UserState.Name = "";
