@@ -1,77 +1,47 @@
 @page "/login"
+@using FreelancePlatform.Client
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
-<PageTitle>Вхід — Біржа</PageTitle>
-
-<main class="container">
-    <section class="auth-section">
-        <h2>Вхід в систему</h2>
-        
-        @if (!string.IsNullOrEmpty(errorMessage))
-        {
-            <div style="color: red; margin-bottom: 15px;">
-                @errorMessage
-            </div>
-        }
-
-        <form @onsubmit="HandleLogin">
-            <fieldset>
-                <label for="email">Email:</label>
-                <input type="email" id="email" @bind="loginModel.Email" required placeholder="Ваш email">
-
-                <label for="password">Пароль:</label>
-                <input type="password" id="password" @bind="loginModel.Password" required placeholder="Ваш пароль">
-            </fieldset>
-
-            <button type="submit">Увійти</button>
-        </form>
-    </section>
-</main>
+<div class="container mt-5">
+    <div class="card shadow p-4 mx-auto" style="max-width: 400px;">
+        <h3 class="text-center">Вхід</h3>
+        <div class="mb-3">
+            <label>Email:</label>
+            <input type="email" class="form-control" @bind="loginModel.Email" />
+        </div>
+        <div class="mb-3">
+            <label>Пароль:</label>
+            <input type="password" class="form-control" @bind="loginModel.Password" />
+        </div>
+        <button class="btn btn-primary w-100" @onclick="HandleLogin">Увійти</button>
+    </div>
+</div>
 
 @code {
     private LoginRequest loginModel = new LoginRequest();
-    private string errorMessage = "";
 
     private async Task HandleLogin()
     {
-        errorMessage = ""; // Очищаємо помилку перед новим запитом
-
         // Відправляємо дані на бекенд
-        // (Якщо ти зараз тестуєш локально, залиш localhost. Якщо бекенд запущено на Railway - встав його посилання)
         var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/auth/login", loginModel);
 
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-            
-            UserState.IsLoggedIn = true;
-            UserState.Name = result.Name;
-            UserState.Role = result.Role;
-            
-            // КРИЧИМО, ЩО МИ УВІЙШЛИ!
-            UserState.NotifyStateChanged(); 
 
-            Navigation.NavigateTo("");
-        }
-        else
-        {
-            // Якщо помилка (наприклад, невірний пароль)
-            errorMessage = "Невірний логін або пароль";
+            if (result != null)
+            {
+                // ОСЬ ТУТ МИ ВИКЛИКАЄМО НОВИЙ МЕТОД З UserState:
+                await UserState.SaveSession(JS, result.Name, result.LastName, result.Role);
+                
+                // Переходимо на головну
+                Navigation.NavigateTo("/");
+            }
         }
     }
 
-    // Додай цей клас у самий низ блоку @code
-    public class LoginResponse
-    {
-        public string Name { get; set; } = "";
-        public string Email { get; set; } = "";
-        public string Role { get; set; } = "";
-    }
-
-    public class LoginRequest
-    {
-        public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
-    }
+    public class LoginRequest { public string Email { get; set; } = ""; public string Password { get; set; } = ""; }
+    public class LoginResponse { public string Name { get; set; } = ""; public string LastName { get; set; } = ""; public string Role { get; set; } = ""; }
 }

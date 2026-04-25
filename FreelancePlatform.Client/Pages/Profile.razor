@@ -1,61 +1,33 @@
 @page "/profile"
 @using FreelancePlatform.Client
-@inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
-<PageTitle>Мій профіль — Біржа</PageTitle>
+<div class="container mt-4">
+    <div class="card shadow-sm p-4">
+        <h2>Мій профіль</h2>
+        <hr />
+        <div class="user-info">
+            <p><strong>Ім'я:</strong> @UserState.Name @UserState.LastName</p>
+            <p><strong>Роль:</strong> @UserState.Role</p>
+        </div>
 
-<main class="container">
-    <section class="profile-card">
-        <h2>Налаштування профілю</h2>
-        
-        @if (UserState.IsLoggedIn)
-        {
-            <div class="profile-info">
-                <div class="info-group">
-                    <label>Ваше ім'я:</label>
-                    <p><strong>@UserState.Name</strong></p>
-                </div>
-                
-                <div class="info-group">
-                    <label>Ваше прізвище:</label>
-                    <p><strong>@UserState.LastName</strong></p>
-                </div>
-                
-                <div class="info-group">
-                    <label>Ваша роль:</label>
-                    <p><span>@(UserState.Role == "Customer" ? "Замовник" : "Фрілансер")</span></p>
-                </div>
-
-                <hr />
-                
-                <div class="profile-actions">
-                    <button class="btn-secondary">Змінити пароль</button>
-                    <button class="btn btn-outline-danger" @onclick="HandleLogout">Вихід</button>
-                </div>
-            </div>
-        }
-        else
-        {
-            <p>Будь ласка, <a href="login">увійдіть</a>, щоб переглянути профіль.</p>
-        }
-    </section>
-</main>
+        <div class="mt-5 border-top pt-3">
+            @* При кліку викликаємо HandleLogout *@
+            <button class="btn btn-outline-danger" @onclick="HandleLogout">
+                🚪 Вийти з акаунту
+            </button>
+        </div>
+    </div>
+</div>
 
 @code {
     private async Task HandleLogout()
     {
-        // Очищаем состояние
-        UserState.IsLoggedIn = false;
-        UserState.Name = "";
-        UserState.LastName = "";
-        UserState.Role = "";
+        // ВИКЛИКАЄМО ОЧИСТКУ LOCAL STORAGE:
+        await UserState.ClearSession(JS);
         
-        // Удаляем куки через JS
-        await JS.InvokeVoidAsync("cookieFunctions.deleteCookie", "user_session");
-        
-        // Уведомляем систему и уходим на главную
-        UserState.NotifyStateChanged();
+        // Повертаємося на головну
         Navigation.NavigateTo("/");
     }
 }

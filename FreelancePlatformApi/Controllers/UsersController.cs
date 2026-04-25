@@ -1,38 +1,69 @@
-using FreelancePlatformApi.Data;
-using FreelancePlatformApi.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.JSInterop;
+using System.Text.Json;
 
-namespace FreelancePlatformApi.Controllers
+namespace FreelancePlatform.Client
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UsersController : ControllerBase
+    public static class UserState
     {
-        private readonly AppDbContext _context;
+        public static string Name { get; set; } = "";
+        public static string LastName { get; set; } = "";
+        public static string Role { get; set; } = "";
+        public static bool IsLoggedIn { get; set; } = false;
 
-        // Подключаем нашу базу данных к контроллеру
-        public UsersController(AppDbContext context)
+        public static event Action? OnChange;
+
+        public static void NotifyStateChanged() => OnChange?.Invoke();
+
+        // 1. Сохранение сессии
+        public static async Task SaveSession(IJSRuntime js, string name, string lastName, string role)
         {
-            _context = context;
+            Name = name;
+            LastName = lastName;
+            Role = role;
+            IsLoggedIn = true;
+
+            var userData = JsonSerializer.Serialize(new { Name, LastName, Role, IsLoggedIn });
+            await js.InvokeVoidAsync("localStorage.setItem", "user_session", userData);
+            
+            NotifyStateChanged();
         }
 
-        // GET: api/users (Получить всех пользователей)
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        // 2. Загрузка сессии (вызывается при F5)
+        public static async Task LoadSession(IJSRuntime js)
         {
-            return await _context.Users.ToListAsync();
+            var jsonData = await js.InvokeAsync<string>("localStorage.getItem", "user_session");
+            if (!string.IsNullOrEmpty(jsonData))
+            {
+                var data = JsonSerializer.Deserialize<UserSession>(jsonData);
+                if (data != null)
+                {
+                    Name = data.Name;
+                    LastName = data.LastName;
+                    Role = data.Role;
+                    IsLoggedIn = data.IsLoggedIn;
+                    NotifyStateChanged();
+                }
+            }
         }
 
-        // POST: api/users (Создать нового пользователя)
-        [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        // 3. Очистка (Выход)
+        public static async Task ClearSession(IJSRuntime js)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            Name = "";
+            LastName = "";
+            Role = "";
+            IsLoggedIn = false;
 
-            // Возвращаем созданного пользователя
-            return Ok(user);
+            await js.InvokeVoidAsync("localStorage.removeItem", "user_session");
+            NotifyStateChanged();
+        }
+
+        private class UserSession
+        {
+            public string Name { get; set; } = "";
+            public string LastName { get; set; } = "";
+            public string Role { get; set; } = "";
+            public bool IsLoggedIn { get; set; }
         }
     }
 }

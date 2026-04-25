@@ -70,4 +70,17 @@
         UserState.NotifyStateChanged();
         Navigation.NavigateTo("/");
     }
+
+    private bool isReady = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Пытаемся восстановить сессию из localStorage
+            await UserState.LoadSession(JS);
+            isReady = true;
+            StateHasChanged();
+        }
+    }
 }
