@@ -1,39 +1,54 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using FreelancePlatformApi.Data;
-using FreelancePlatformApi.Models;
+using FreelancePlatformApi.Data; // Підключаємо твій контекст БД
+// using FreelancePlatformApi.Models; // Розкоментуй, якщо юзер лежить в папці Models
 
-[ApiController]
-[Route("api/[controller]")]
-public class AuthController : ControllerBase
+namespace FreelancePlatformApi.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public AuthController(AppDbContext context)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AuthController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly AppDbContext _context;
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
-    {
-        // Шукаємо користувача в базі PostgreSQL за поштою та паролем
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == request.Email && u.Password == request.Password);
-
-        if (user == null)
+        // "Інжектимо" підключення до бази даних
+        public AuthController(AppDbContext context)
         {
-            return Unauthorized(new { message = "Невірний логін або пароль" });
+            _context = context;
         }
 
-        // Повертаємо ім'я конкретного користувача (Аріна, Артем тощо)
-        return Ok(new { name = user.Name, lastName = user.LastName, email = user.Email, role = user.Role });
-    }
-}
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+            {
+                return BadRequest("Email та пароль обов'язкові.");
+            }
 
-// Допоміжний клас для запиту
-public class LoginRequest
-{
-    public string Email { get; set; } = "";
-    public string Password { get; set; } = "";
+            // Йдемо в БД і шукаємо реального користувача
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == request.Email && u.Password == request.Password);
+
+            if (user != null)
+            {
+                // Якщо знайшли — повертаємо його РЕАЛЬНІ дані
+                return Ok(new 
+                { 
+                    Name = user.Name,       // УВАГА: перевір, як точно називається поле в твоїй моделі (Name чи FirstName)
+                    LastName = user.LastName, 
+                    Role = user.Role 
+                });
+            }
+
+            // Якщо такого в базі немає або пароль не підійшов
+            return Unauthorized("Невірний email або пароль");
+        }
+    }
+
+    // Модель того, що прилітає з фронтенду
+    public class LoginRequest
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
 }
