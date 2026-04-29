@@ -3,51 +3,45 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="">Біржа фрілансу 🚀</a>
+        
+        <div class="d-flex justify-content-end w-100">
+            <ul class="navbar-nav align-items-center flex-row gap-3">
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">Всі замовлення</NavLink>
+                </li>
 
-<header>
-    <h1>Біржа фрілансу 🚀</h1>
-    <nav>
-        <ul>
-            <li><NavLink href="" Match="NavLinkMatch.All">Всі замовлення</NavLink></li>
+                @if (UserState.IsLoggedIn)
+                {
+                    @if (UserState.Role == "Customer")
+                    {
+                        <li class="nav-item"><NavLink class="nav-link" href="create-order">Створити замовлення</NavLink></li>
+                    }
+                    else if (UserState.Role == "Freelancer")
+                    {
+                        <li class="nav-item"><NavLink class="nav-link" href="my-proposals">Мої пропозиції</NavLink></li>
+                    }
 
-            @if (UserState.IsLoggedIn)
-            {
-                @if (UserState.Role == "Customer")
-                {
-                    <li><NavLink href="create-order">Створити замовлення</NavLink></li>
-                }
-                else if (UserState.Role == "Freelancer")
-                {
-                    <li><NavLink href="my-proposals">Мої пропозиції</NavLink></li>
-                }
-                @* Привітання, яке веде в профіль *@
-                    <li>
-                        <NavLink href="profile" class="profile-link">
+                    <li class="nav-item ms-3">
+                        <NavLink class="btn btn-outline-light btn-sm rounded-pill px-3" href="profile">
                             👋 Привіт, @UserState.Name!
                         </NavLink>
                     </li>
-            }
-            else
-            {
-                <li><NavLink href="login">Вхід</NavLink></li>
-                <li><NavLink href="register">Реєстрація</NavLink></li>
-            }
-        </ul>
-    </nav>
-</header>
-
-@if (showCookieNotice)
-{
-    <div class="cookie-notice">
-        <span>🍪 Ми використовуємо куки для вашої зручної авторизації.</span>
-        <button @onclick="() => showCookieNotice = false">Зрозуміло</button>
+                }
+                else
+                {
+                    <li class="nav-item"><NavLink class="nav-link" href="login">Вхід</NavLink></li>
+                    <li class="nav-item"><NavLink class="btn btn-primary btn-sm rounded-pill px-3" href="register">Реєстрація</NavLink></li>
+                }
+            </ul>
+        </div>
     </div>
-}
+</nav>
 
 @code {
-    // ДОДАЙ ОСЬ ЦЕЙ РЯДОК:
-    private bool showCookieNotice = true;
-
+    // ... твій існуючий блок OnInitialized та Dispose залишається без змін! ...
     protected override void OnInitialized()
     {
         UserState.OnChange += StateHasChanged;
@@ -56,31 +50,5 @@
     public void Dispose()
     {
         UserState.OnChange -= StateHasChanged;
-    }
-    
-        private async Task HandleLogout()
-    {
-        UserState.IsLoggedIn = false;
-        UserState.Name = "";
-        UserState.LastName = "";
-        UserState.Role = "";
-        
-        await JS.InvokeVoidAsync("cookieFunctions.deleteCookie", "user_session");
-        
-        UserState.NotifyStateChanged();
-        Navigation.NavigateTo("/");
-    }
-
-    private bool isReady = false;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Пытаемся восстановить сессию из localStorage
-            await UserState.LoadSession(JS);
-            isReady = true;
-            StateHasChanged();
-        }
     }
 }

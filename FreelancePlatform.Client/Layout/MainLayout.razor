@@ -1,20 +1,19 @@
 ﻿@inherits LayoutComponentBase
 @inject IJSRuntime JS
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<div class="d-flex flex-column min-vh-100">
+    @* Тепер меню буде красивою полосою зверху *@
+    <NavMenu /> 
 
-    <main>
-        <article class="content px-4">
+    @* Основний контент сайту на сірому тлі *@
+    <main class="flex-grow-1 bg-light pt-4 pb-5">
+        <article class="container">
             @if (isInitialized)
             {
                 @Body
             }
             else
             {
-                @* Красивая крутилка, пока мы проверяем, кто ты *@
                 <div class="d-flex justify-content-center align-items-center" style="height: 50vh;">
                     <div class="spinner-border text-primary" role="status"></div>
                     <span class="ms-2">Завантаження профілю...</span>
