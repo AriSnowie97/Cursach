@@ -1,58 +1,80 @@
-using System;
+using Microsoft.JSInterop;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.JSInterop;
+using System;
 
 namespace FreelancePlatform.Client
 {
     public static class UserState
     {
-        public static bool IsLoggedIn { get; set; } = false;
         public static string Name { get; set; } = "";
         public static string LastName { get; set; } = "";
-        public static string Role { get; set; } = ""; // "Customer" або "Freelancer"
+        public static string Role { get; set; } = "";
+        public static bool IsLoggedIn { get; set; } = false;
 
         public static event Action? OnChange;
+
         public static void NotifyStateChanged() => OnChange?.Invoke();
 
-        public static async Task SaveToCookies(IJSRuntime js)
+        // 1. ЗБЕРЕЖЕННЯ (SaveSession)
+        public static async Task SaveSession(IJSRuntime js, string name, string lastName, string role)
         {
-            var data = JsonSerializer.Serialize(new { Name, LastName, Role, IsLoggedIn });
-            // Зберігаємо на 7 днів
-            await js.InvokeVoidAsync("cookieFunctions.setCookie", "user_session", data, 7);
+            Name = name;
+            LastName = lastName;
+            Role = role;
+            IsLoggedIn = true;
+
+            var userData = JsonSerializer.Serialize(new { Name, LastName, Role, IsLoggedIn });
+            await js.InvokeVoidAsync("localStorage.setItem", "user_session", userData);
+            
+            NotifyStateChanged();
         }
 
-        public static async Task LoadFromCookies(IJSRuntime js)
+        // 2. ЗАВАНТАЖЕННЯ (LoadSession)
+        public static async Task LoadSession(IJSRuntime js)
         {
-            try
+            try 
             {
-                var data = await js.InvokeAsync<string>("cookieFunctions.getCookie", "user_session");
-                if (!string.IsNullOrEmpty(data))
+                var jsonData = await js.InvokeAsync<string>("localStorage.getItem", "user_session");
+                if (!string.IsNullOrEmpty(jsonData))
                 {
-                    var session = JsonSerializer.Deserialize<UserSession>(data);
-                    if (session != null)
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var data = JsonSerializer.Deserialize<UserSession>(jsonData, options);
+                    
+                    if (data != null)
                     {
-                        IsLoggedIn = session.IsLoggedIn;
-                        Name = session.Name;
-                        LastName = session.LastName;
-                        Role = session.Role;
+                        Name = data.Name;
+                        LastName = data.LastName;
+                        Role = data.Role;
+                        IsLoggedIn = data.IsLoggedIn;
                         NotifyStateChanged();
                     }
                 }
             }
-            catch (Exception ex)
+            catch 
             {
-                Console.WriteLine($"Помилка завантаження кукі: {ex.Message}");
+                // Якщо при першому запуску щось пішло не так, просто ігноруємо
             }
         }
 
-        // Внутрішній клас для десеріалізації
+        // 3. ОЧИЩЕННЯ (ClearSession)
+        public static async Task ClearSession(IJSRuntime js)
+        {
+            Name = "";
+            LastName = "";
+            Role = "";
+            IsLoggedIn = false;
+
+            await js.InvokeVoidAsync("localStorage.removeItem", "user_session");
+            NotifyStateChanged();
+        }
+
         private class UserSession
         {
-            public bool IsLoggedIn { get; set; }
             public string Name { get; set; } = "";
             public string LastName { get; set; } = "";
             public string Role { get; set; } = "";
+            public bool IsLoggedIn { get; set; }
         }
     }
 }
