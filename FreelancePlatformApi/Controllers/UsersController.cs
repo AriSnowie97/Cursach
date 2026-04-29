@@ -28,13 +28,17 @@ namespace FreelancePlatform.Client
             NotifyStateChanged();
         }
 
-        // 2. Загрузка сессии (вызывается при F5)
         public static async Task LoadSession(IJSRuntime js)
+{
+        try 
         {
             var jsonData = await js.InvokeAsync<string>("localStorage.getItem", "user_session");
             if (!string.IsNullOrEmpty(jsonData))
             {
-                var data = JsonSerializer.Deserialize<UserSession>(jsonData);
+                // Настройка, чтобы C# не капризничал по поводу больших/маленьких букв в JSON
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var data = JsonSerializer.Deserialize<UserSession>(jsonData, options);
+                
                 if (data != null)
                 {
                     Name = data.Name;
@@ -45,7 +49,11 @@ namespace FreelancePlatform.Client
                 }
             }
         }
-
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки сессии: {ex.Message}");
+        }
+}
         // 3. Очистка (Выход)
         public static async Task ClearSession(IJSRuntime js)
         {

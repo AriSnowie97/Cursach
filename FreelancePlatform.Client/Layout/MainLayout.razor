@@ -1,8 +1,42 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
 
-@* Викликаємо наше динамічне меню *@
-<NavMenu />
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
 
-<div class="main-content">
-    @Body
+    <main>
+        <article class="content px-4">
+            @if (isInitialized)
+            {
+                @Body
+            }
+            else
+            {
+                @* Красивая крутилка, пока мы проверяем, кто ты *@
+                <div class="d-flex justify-content-center align-items-center" style="height: 50vh;">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <span class="ms-2">Завантаження профілю...</span>
+                </div>
+            }
+        </article>
+    </main>
 </div>
+
+@code {
+    private bool isInitialized = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Ждем, пока UserState достанет данные из памяти браузера
+            await UserState.LoadSession(JS);
+            
+            // Теперь мы готовы показывать страницу
+            isInitialized = true;
+            StateHasChanged();
+        }
+    }
+}
