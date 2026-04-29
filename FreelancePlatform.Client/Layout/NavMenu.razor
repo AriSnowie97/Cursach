@@ -3,45 +3,50 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-2">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="">Біржа фрілансу 🚀</a>
-        
-        <div class="d-flex justify-content-end w-100">
-            <ul class="navbar-nav align-items-center flex-row gap-3">
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">Всі замовлення</NavLink>
-                </li>
+        <a class="navbar-brand fw-bold d-flex align-items-center text-dark" href="">
+            <span class="fs-4 me-2">🚀</span> 
+            <span style="letter-spacing: 1px;">ФРІЛАНС.ЮА</span>
+        </a>
+
+        <div class="d-flex align-items-center ms-auto">
+            <div class="navbar-nav d-flex flex-row align-items-center gap-2">
+                
+                <NavLink class="nav-link px-3 py-2 text-dark" href="" Match="NavLinkMatch.All">Всі замовлення</NavLink>
 
                 @if (UserState.IsLoggedIn)
                 {
-                    @if (UserState.Role == "Customer")
+                    if (UserState.Role == "Customer")
                     {
-                        <li class="nav-item"><NavLink class="nav-link" href="create-order">Створити замовлення</NavLink></li>
+                        <NavLink class="nav-link px-3 py-2 text-dark" href="create-order">Створити замовлення</NavLink>
                     }
                     else if (UserState.Role == "Freelancer")
                     {
-                        <li class="nav-item"><NavLink class="nav-link" href="my-proposals">Мої пропозиції</NavLink></li>
+                        <NavLink class="nav-link px-3 py-2 text-dark" href="my-proposals">Мої пропозиції</NavLink>
                     }
 
-                    <li class="nav-item ms-3">
-                        <NavLink class="btn btn-outline-light btn-sm rounded-pill px-3" href="profile">
-                            👋 Привіт, @UserState.Name!
+                    <div class="nav-item ms-lg-3">
+                        <NavLink class="btn btn-primary rounded-pill px-4" href="profile" style="line-height: 1.5;">
+                            👋 @UserState.Name
                         </NavLink>
-                    </li>
+                    </div>
                 }
                 else
                 {
-                    <li class="nav-item"><NavLink class="nav-link" href="login">Вхід</NavLink></li>
-                    <li class="nav-item"><NavLink class="btn btn-primary btn-sm rounded-pill px-3" href="register">Реєстрація</NavLink></li>
+                    <NavLink class="nav-link px-3 py-2 text-dark" href="login">Вхід</NavLink>
+                    <div class="nav-item ms-lg-2">
+                        <NavLink class="btn btn-outline-primary rounded-pill px-4" href="register" style="line-height: 1.5;">
+                            Реєстрація
+                        </NavLink>
+                    </div>
                 }
-            </ul>
+            </div>
         </div>
     </div>
 </nav>
 
 @code {
-    // ... твій існуючий блок OnInitialized та Dispose залишається без змін! ...
     protected override void OnInitialized()
     {
         UserState.OnChange += StateHasChanged;
