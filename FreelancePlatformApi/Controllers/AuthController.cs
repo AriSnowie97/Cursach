@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FreelancePlatformApi.Data; // Підключаємо твій контекст БД
-// using FreelancePlatformApi.Models; // Розкоментуй, якщо юзер лежить в папці Models
+using FreelancePlatformApi.Models; // Розкоментував, щоб система бачила клас User (перевір чи він лежить в цій папці)
 
 namespace FreelancePlatformApi.Controllers
 {
@@ -17,6 +17,7 @@ namespace FreelancePlatformApi.Controllers
             _context = context;
         }
 
+        // --- МЕТОД ДЛЯ ВХОДУ (ЛОГІН) ---
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -43,12 +44,61 @@ namespace FreelancePlatformApi.Controllers
             // Якщо такого в базі немає або пароль не підійшов
             return Unauthorized("Невірний email або пароль");
         }
+
+        // --- НОВИЙ МЕТОД ДЛЯ РЕЄСТРАЦІЇ ---
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+            {
+                return BadRequest("Email та пароль обов'язкові.");
+            }
+
+            // 1. Перевіряємо, чи немає вже такого email в базі
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (existingUser != null)
+            {
+                return BadRequest("Користувач з таким email вже існує!");
+            }
+
+            // 2. Створюємо нового користувача
+            var newUser = new User // УВАГА: переконайся, що таблиця/клас в БД називається саме User
+            {
+                Name = request.Name,
+                LastName = request.LastName,
+                Email = request.Email,
+                Password = request.Password, // Для курсача підійде, в реальному житті паролі хешують
+                Role = request.Role
+            };
+
+            // 3. Зберігаємо в базу PostgreSQL
+            _context.Users.Add(newUser);
+            await _context.SaveChangesAsync();
+
+            // 4. Повертаємо дані назад на фронт, щоб відразу авторизувати користувача
+            return Ok(new 
+            { 
+                Name = newUser.Name, 
+                LastName = newUser.LastName, 
+                Role = newUser.Role 
+            });
+        }
     }
 
-    // Модель того, що прилітає з фронтенду
+    // Модель того, що прилітає з фронтенду при логіні
     public class LoginRequest
     {
         public string Email { get; set; } = "";
         public string Password { get; set; } = "";
+    }
+
+    // Модель того, що прилітає з фронтенду при реєстрації
+    public class RegisterRequest
+    {
+        public string Name { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string Role { get; set; } = "Customer"; // За замовчуванням
     }
 }
