@@ -1,77 +1,108 @@
 @page "/register"
+@using FreelancePlatform.Client
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
-<PageTitle>Реєстрація — Біржа</PageTitle>
-
-<main class="container">
-    <section class="auth-section">
-        <h2>Створення акаунту</h2>
+<div class="container mt-5">
+    <div class="card shadow p-4 mx-auto" style="max-width: 400px;">
+        <h3 class="text-center mb-4">Реєстрація</h3>
+        
+        <div class="mb-3">
+            <label class="form-label">Ім'я:</label>
+            <input type="text" class="form-control" @bind="registerModel.Name" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Прізвище:</label>
+            <input type="text" class="form-control" @bind="registerModel.LastName" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email:</label>
+            <input type="email" class="form-control" @bind="registerModel.Email" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Пароль:</label>
+            <input type="password" class="form-control" @bind="registerModel.Password" />
+        </div>
+        <div class="mb-4">
+            <label class="form-label">Хто ви?</label>
+            <select class="form-select" @bind="registerModel.Role">
+                <option value="Customer">Замовник (Шукаю виконавця)</option>
+                <option value="Freelancer">Фрілансер (Шукаю роботу)</option>
+            </select>
+        </div>
 
         @if (!string.IsNullOrEmpty(errorMessage))
         {
-            <div style="color: red; margin-bottom: 15px;">
-                @errorMessage
-            </div>
+            <div class="alert alert-danger">@errorMessage</div>
         }
 
-        <form @onsubmit="HandleRegister">
-            <fieldset>
-                <label for="name">Ім'я:</label>
-                <input type="text" id="name" @bind="registerModel.Name" required placeholder="Ваше ім'я">
-
-                <label for="lastname">Прізвище:</label>
-                <input type="text" id="lastname" @bind="registerModel.LastName" required>
-
-                <label for="email">Email:</label>
-                <input type="email" id="email" @bind="registerModel.Email" required placeholder="Ваш email">
-
-                <label for="password">Пароль:</label>
-                <input type="password" id="password" @bind="registerModel.Password" required placeholder="Придумайте пароль">
-
-            <label for="role">Хто ви?</label>
-                <select id="role" @bind="registerModel.Role" required>
-                    <option value="Customer">Замовник (Шукаю фрілансера)</option>
-                    <option value="Freelancer">Фрілансер (Шукаю роботу)</option>
-                </select>
-            </fieldset>
-
-            <button type="submit">Зареєструватися</button>
-            <p style="margin-top: 15px; text-align: center;">
-                Вже є акаунт? <a href="login">Увійти</a>
-            </p>
-        </form>
-    </section>
-</main>
+        <button class="btn btn-primary w-100 rounded-pill" @onclick="HandleRegister" disabled="@isLoading">
+            @(isLoading ? "Реєстрація..." : "Зареєструватися")
+        </button>
+    </div>
+</div>
 
 @code {
     private RegisterRequest registerModel = new RegisterRequest();
     private string errorMessage = "";
+    private bool isLoading = false;
 
     private async Task HandleRegister()
     {
-        errorMessage = ""; 
+        isLoading = true;
+        errorMessage = "";
 
-        // Відправляємо дані на бекенд (зміни localhost на railway, якщо зараз тестуєш з ним)
-        var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/users", registerModel);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            // Якщо все ок, перекидаємо на сторінку входу
-            Navigation.NavigateTo("login");
+            // 1. Відправляємо дані на ПРАВИЛЬНУ адресу (туди, де бекенд зберігає їх у БД)
+            var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/auth/register", registerModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+
+                if (result != null)
+                {
+                    // 2. Одразу зберігаємо користувача в LocalStorage (автоматичний логін)
+                    await UserState.SaveSession(JS, result.Name, result.LastName, result.Role);
+                    
+                    // 3. Перекидаємо на головну сторінку
+                    Navigation.NavigateTo("/");
+                }
+            }
+            else
+            {
+                // Якщо бекенд відповів помилкою (наприклад, такий email вже є)
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                errorMessage = string.IsNullOrEmpty(errorMsg) ? "Помилка реєстрації. Перевірте дані." : errorMsg;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            errorMessage = "Помилка при реєстрації. Можливо, такий email вже існує.";
+            errorMessage = "Помилка з'єднання з сервером.";
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
 
-    public class RegisterRequest
-    {
-        public string Name { get; set; } = "";
-        public string LastName { get; set; } = "";
-        public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
-        public string Role { get; set; } = "Customer"; // За замовчуванням - замовник
+    // Моделі для форми
+    public class RegisterRequest 
+    { 
+        public string Name { get; set; } = ""; 
+        public string LastName { get; set; } = ""; 
+        public string Email { get; set; } = ""; 
+        public string Password { get; set; } = ""; 
+        public string Role { get; set; } = "Customer"; // Значення за замовчуванням
+    }
+
+    // Модель, яку ми очікуємо отримати від бекенду після успішного збереження в БД
+    public class RegisterResponse 
+    { 
+        public string Name { get; set; } = ""; 
+        public string LastName { get; set; } = ""; 
+        public string Role { get; set; } = ""; 
     }
 }
