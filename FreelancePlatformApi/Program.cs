@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // 1. Налаштовуємо CORS (дозволяємо фронтенду стукатися до нас)
 builder.Services.AddCors(options =>
 {
@@ -20,15 +21,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers();
 
 var app = builder.Build();
-// Автоматично оновлюємо базу даних при запуску сервера
+
+// --- ДОБАВЛЯЕМ АВТО-ОБНОВЛЕНИЕ БАЗЫ ДАННЫХ ---
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    db.Database.Migrate(); 
 }
+// ----------------------------------------------
 
-// 2. Вмикаємо CORS (обов'язково ПЕРЕД MapControllers)
-app.UseCors("AllowAll");
+app.UseCors("AllowAll"); // Твои настройки CORS
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
