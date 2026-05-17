@@ -34,7 +34,8 @@
             if (result != null)
             {
                 // ОСЬ ТУТ МИ ВИКЛИКАЄМО НОВИЙ МЕТОД З UserState:
-                await UserState.SaveSession(JS, result.Name, result.LastName, result.Role);
+                // Теперь передаем result.Id вторым параметром!
+                await UserState.SaveSession(JS, result.Id, result.Name, result.LastName, result.Role);
                 
                 // Переходимо на головну
                 Navigation.NavigateTo("/");
@@ -43,5 +44,11 @@
     }
 
     public class LoginRequest { public string Email { get; set; } = ""; public string Password { get; set; } = ""; }
-    public class LoginResponse { public string Name { get; set; } = ""; public string LastName { get; set; } = ""; public string Role { get; set; } = ""; }
+    public class LoginResponse
+    {
+        public int Id { get; set; } // <-- ДОБАВИТЬ ЭТО
+        public string Name { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string Role { get; set; } = "";
+    }
 }

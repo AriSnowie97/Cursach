@@ -77,6 +77,8 @@
     {
         public string Title { get; set; } = "";
         public string Description { get; set; } = "";
-        public decimal Budget { get; set; } // УВАГА: якщо в БД у тебе Budget, зміни тут Price на Budget!
+        public decimal Budget { get; set; }
+        
+        public int CustomerId { get; set; } // <-- ДОБАВИТЬ ЭТО, чтобы ошибка CS1061 исчезла
     }
 }

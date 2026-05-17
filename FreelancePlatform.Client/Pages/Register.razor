@@ -65,7 +65,7 @@
                 if (result != null)
                 {
                     // 2. Одразу зберігаємо користувача в LocalStorage (автоматичний логін)
-                    await UserState.SaveSession(JS, result.Name, result.LastName, result.Role);
+                    await UserState.SaveSession(JS, result.Id, result.Name, result.LastName, result.Role);
                     
                     // 3. Перекидаємо на головну сторінку
                     Navigation.NavigateTo("/");
@@ -101,6 +101,7 @@
     // Модель, яку ми очікуємо отримати від бекенду після успішного збереження в БД
     public class RegisterResponse 
     { 
+        public int Id { get; set; } // <-- ДОБАВИТЬ ЭТО
         public string Name { get; set; } = ""; 
         public string LastName { get; set; } = ""; 
         public string Role { get; set; } = ""; 
