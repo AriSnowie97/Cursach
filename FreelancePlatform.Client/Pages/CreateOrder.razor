@@ -53,6 +53,7 @@
         try
         {
             // Відправляємо дані на наш новий контролер
+            newOrder.CustomerId = UserState.Id;
             var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/orders", newOrder);
             
             if (response.IsSuccessStatusCode)

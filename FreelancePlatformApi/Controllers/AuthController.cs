@@ -35,6 +35,7 @@ namespace FreelancePlatformApi.Controllers
                 // Якщо знайшли — повертаємо його РЕАЛЬНІ дані
                 return Ok(new 
                 { 
+                    Id = user.Id,
                     Name = user.Name,       // УВАГА: перевір, як точно називається поле в твоїй моделі (Name чи FirstName)
                     LastName = user.LastName, 
                     Role = user.Role 
@@ -78,6 +79,7 @@ namespace FreelancePlatformApi.Controllers
             // 4. Повертаємо дані назад на фронт, щоб відразу авторизувати користувача
             return Ok(new 
             { 
+                Id = newUser.Id,
                 Name = newUser.Name, 
                 LastName = newUser.LastName, 
                 Role = newUser.Role 

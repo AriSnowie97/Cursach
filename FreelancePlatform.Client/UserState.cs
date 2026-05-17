@@ -7,6 +7,7 @@ namespace FreelancePlatform.Client
 {
     public static class UserState
     {
+        public static int Id { get; set; } = 0;
         public static string Name { get; set; } = "";
         public static string LastName { get; set; } = "";
         public static string Role { get; set; } = "";
@@ -17,18 +18,18 @@ namespace FreelancePlatform.Client
         public static void NotifyStateChanged() => OnChange?.Invoke();
 
         // 1. ЗБЕРЕЖЕННЯ (SaveSession)
-        public static async Task SaveSession(IJSRuntime js, string name, string lastName, string role)
-        {
-            Name = name;
-            LastName = lastName;
-            Role = role;
-            IsLoggedIn = true;
+        public static async Task SaveSession(IJSRuntime js, int id, string name, string lastName, string role)
+    {
+        Id = id; // Сохраняем
+        Name = name;
+        LastName = lastName;
+        Role = role;
+        IsLoggedIn = true;
 
-            var userData = JsonSerializer.Serialize(new { Name, LastName, Role, IsLoggedIn });
-            await js.InvokeVoidAsync("localStorage.setItem", "user_session", userData);
-            
-            NotifyStateChanged();
-        }
+        var userData = JsonSerializer.Serialize(new { Id, Name, LastName, Role, IsLoggedIn });
+        await js.InvokeVoidAsync("localStorage.setItem", "user_session", userData);
+        NotifyStateChanged();
+    }
 
         // 2. ЗАВАНТАЖЕННЯ (LoadSession)
         public static async Task LoadSession(IJSRuntime js)
@@ -71,6 +72,7 @@ namespace FreelancePlatform.Client
 
         private class UserSession
         {
+            public int Id { get; set; }
             public string Name { get; set; } = "";
             public string LastName { get; set; } = "";
             public string Role { get; set; } = "";
