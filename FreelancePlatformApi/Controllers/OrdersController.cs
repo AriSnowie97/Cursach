@@ -48,6 +48,20 @@ namespace FreelancePlatformApi.Controllers
             return Ok(order);
         }
 
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] string newStatus)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return NotFound("Заказ не найден");
+
+            // Можно добавить проверки, например: только заказчик может отменить, 
+            // или только фрилансер может перевести в InProgress
+            order.Status = newStatus;
+            
+            await _context.SaveChangesAsync();
+            return Ok(order);
+        }
+
         // GET: api/orders (Отримання ВСІХ замовлень для головної сторінки)
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
