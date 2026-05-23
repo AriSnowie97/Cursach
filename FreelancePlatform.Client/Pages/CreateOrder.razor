@@ -45,6 +45,42 @@
 </div>
 
 @code {
+    private async Task HandleCreateOrder()
+{
+    errorMessage = "";
+    successMessage = "";
+
+    // ПРИМУСОВО ПІДСТАВЛЯЄМО ID ПОТОЧНОГО КОРИСТУВАЧА
+    orderModel.CustomerId = UserState.Id; 
+
+    // Лог для перевірки в браузері (ти побачиш його в консолі F12)
+    Console.WriteLine($"Надсилаємо замовлення з CustomerId: {orderModel.CustomerId}");
+
+    if (orderModel.CustomerId == 0)
+    {
+        errorMessage = "Помилка: Ваш профіль застарів. Будь ласка, перезайдіть в акаунт!";
+        return;
+    }
+
+    try
+    {
+        var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/orders", orderModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            successMessage = "🟢 Замовлення успішно створено й опубліковано!";
+            orderModel = new OrderModel(); // Очищаємо форму
+        }
+        else
+        {
+            errorMessage = await response.Content.ReadAsStringAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        errorMessage = "Помилка зв'язку з сервером.";
+    }
+}
     private OrderModel newOrder = new OrderModel();
     private bool showError = false;
 
