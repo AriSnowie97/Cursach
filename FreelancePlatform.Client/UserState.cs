@@ -32,6 +32,7 @@ namespace FreelancePlatform.Client
     }
 
         // 2. ЗАВАНТАЖЕННЯ (LoadSession)
+        // 2. ЗАВАНТАЖЕННЯ (LoadSession)
         public static async Task LoadSession(IJSRuntime js)
         {
             try 
@@ -44,6 +45,9 @@ namespace FreelancePlatform.Client
                     
                     if (data != null)
                     {
+                        // ОСЬ ЦЕЙ РЯДОК БУВ ПРОПУЩЕНИЙ!
+                        Id = data.Id; 
+                        
                         Name = data.Name;
                         LastName = data.LastName;
                         Role = data.Role;
@@ -54,7 +58,7 @@ namespace FreelancePlatform.Client
             }
             catch 
             {
-                // Якщо при першому запуску щось пішло не так, просто ігноруємо
+                // Якщо щось зламалося, обнуляємо
             }
         }
 
