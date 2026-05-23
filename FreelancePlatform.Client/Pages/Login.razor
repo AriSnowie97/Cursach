@@ -5,17 +5,17 @@
 @inject IJSRuntime JS
 
 <div class="container mt-5">
-    <div class="card shadow p-4 mx-auto" style="max-width: 400px;">
-        <h3 class="text-center">Вхід</h3>
+    <div class="card shadow p-4 mx-auto" style="max-width: 400px; border-radius: 12px;">
+        <h3 class="text-center mb-4 fw-bold">Вхід</h3>
         <div class="mb-3">
-            <label>Email:</label>
+            <label class="form-label fw-bold">Email:</label>
             <input type="email" class="form-control" @bind="loginModel.Email" />
         </div>
         <div class="mb-3">
-            <label>Пароль:</label>
+            <label class="form-label fw-bold">Пароль:</label>
             <input type="password" class="form-control" @bind="loginModel.Password" />
         </div>
-        <button class="btn btn-primary w-100" @onclick="HandleLogin">Увійти</button>
+        <button class="btn btn-primary w-100 rounded-pill fw-bold py-2 mt-2" @onclick="HandleLogin">Увійти</button>
     </div>
 </div>
 
@@ -24,29 +24,47 @@
 
     private async Task HandleLogin()
     {
-        // Відправляємо дані на бекенд
-        var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/auth/login", loginModel);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            // Відправляємо дані на бекенд
+            var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/auth/login", loginModel);
 
-            if (result != null)
+            if (response.IsSuccessStatusCode)
             {
-                // ОСЬ ТУТ МИ ВИКЛИКАЄМО НОВИЙ МЕТОД З UserState:
-                // Теперь передаем result.Id вторым параметром!
-                await UserState.SaveSession(JS, result.Id, result.Name, result.LastName, result.Role);
-                
-                // Переходимо на головну
-                Navigation.NavigateTo("/");
+                // Налаштування для десеріалізації: дозволяємо зчитувати 'id' незалежно від регістру букв
+                var jsonOptions = new System.Text.Json.JsonSerializerOptions 
+                { 
+                    PropertyNameCaseInsensitive = true 
+                };
+
+                // Передаємо jsonOptions другим параметром!
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>(jsonOptions);
+
+                if (result != null)
+                {
+                    // Тепер тут залізобетонно запишеться реальний ID користувача з бази даних
+                    await UserState.SaveSession(JS, result.Id, result.Name, result.LastName, result.Role);
+                    
+                    // Переходимо на головну
+                    Navigation.NavigateTo("/");
+                }
             }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Помилка авторизації або з'єднання з сервером.");
         }
     }
 
-    public class LoginRequest { public string Email { get; set; } = ""; public string Password { get; set; } = ""; }
+    public class LoginRequest 
+    { 
+        public string Email { get; set; } = ""; 
+        public string Password { get; set; } = ""; 
+    }
+
     public class LoginResponse
     {
-        public int Id { get; set; } // <-- ДОБАВИТЬ ЭТО
+        public int Id { get; set; } 
         public string Name { get; set; } = "";
         public string LastName { get; set; } = "";
         public string Role { get; set; } = "";

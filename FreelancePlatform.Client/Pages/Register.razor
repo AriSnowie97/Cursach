@@ -5,27 +5,27 @@
 @inject IJSRuntime JS
 
 <div class="container mt-5">
-    <div class="card shadow p-4 mx-auto" style="max-width: 400px;">
-        <h3 class="text-center mb-4">Реєстрація</h3>
+    <div class="card shadow p-4 mx-auto" style="max-width: 400px; border-radius: 12px;">
+        <h3 class="text-center mb-4 fw-bold">Реєстрація</h3>
         
         <div class="mb-3">
-            <label class="form-label">Ім'я:</label>
+            <label class="form-label fw-bold">Ім'я:</label>
             <input type="text" class="form-control" @bind="registerModel.Name" />
         </div>
         <div class="mb-3">
-            <label class="form-label">Прізвище:</label>
+            <label class="form-label fw-bold">Прізвище:</label>
             <input type="text" class="form-control" @bind="registerModel.LastName" />
         </div>
         <div class="mb-3">
-            <label class="form-label">Email:</label>
+            <label class="form-label fw-bold">Email:</label>
             <input type="email" class="form-control" @bind="registerModel.Email" />
         </div>
         <div class="mb-3">
-            <label class="form-label">Пароль:</label>
+            <label class="form-label fw-bold">Пароль:</label>
             <input type="password" class="form-control" @bind="registerModel.Password" />
         </div>
         <div class="mb-4">
-            <label class="form-label">Хто ви?</label>
+            <label class="form-label fw-bold">Хто ви?</label>
             <select class="form-select" @bind="registerModel.Role">
                 <option value="Customer">Замовник (Шукаю виконавця)</option>
                 <option value="Freelancer">Фрілансер (Шукаю роботу)</option>
@@ -34,10 +34,10 @@
 
         @if (!string.IsNullOrEmpty(errorMessage))
         {
-            <div class="alert alert-danger">@errorMessage</div>
+            <div class="alert alert-danger shadow-sm py-2 px-3 small">⚠️ @errorMessage</div>
         }
 
-        <button class="btn btn-primary w-100 rounded-pill" @onclick="HandleRegister" disabled="@isLoading">
+        <button class="btn btn-primary w-100 rounded-pill fw-bold py-2" @onclick="HandleRegister" disabled="@isLoading">
             @(isLoading ? "Реєстрація..." : "Зареєструватися")
         </button>
     </div>
@@ -55,30 +55,36 @@
 
         try
         {
-            // 1. Відправляємо дані на ПРАВИЛЬНУ адресу (туди, де бекенд зберігає їх у БД)
+            // Відправляємо дані на бекенд Railway
             var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/auth/register", registerModel);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+                // Налаштування для десеріалізації: дозволяємо читати 'id' незалежно від регістру літер
+                var jsonOptions = new System.Text.Json.JsonSerializerOptions 
+                { 
+                    PropertyNameCaseInsensitive = true 
+                };
+
+                // Передаємо jsonOptions другим параметром!
+                var result = await response.Content.ReadFromJsonAsync<RegisterResponse>(jsonOptions);
 
                 if (result != null)
                 {
-                    // 2. Одразу зберігаємо користувача в LocalStorage (автоматичний логін)
+                    // Тепер тут залізобетонно буде реальний ID з бази даних, а не 0
                     await UserState.SaveSession(JS, result.Id, result.Name, result.LastName, result.Role);
                     
-                    // 3. Перекидаємо на головну сторінку
+                    // Перенаправляємо на головну
                     Navigation.NavigateTo("/");
                 }
             }
             else
             {
-                // Якщо бекенд відповів помилкою (наприклад, такий email вже є)
                 var errorMsg = await response.Content.ReadAsStringAsync();
                 errorMessage = string.IsNullOrEmpty(errorMsg) ? "Помилка реєстрації. Перевірте дані." : errorMsg;
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             errorMessage = "Помилка з'єднання з сервером.";
         }
@@ -95,13 +101,13 @@
         public string LastName { get; set; } = ""; 
         public string Email { get; set; } = ""; 
         public string Password { get; set; } = ""; 
-        public string Role { get; set; } = "Customer"; // Значення за замовчуванням
+        public string Role { get; set; } = "Customer"; 
     }
 
-    // Модель, яку ми очікуємо отримати від бекенду після успішного збереження в БД
+    // Модель відповіді
     public class RegisterResponse 
     { 
-        public int Id { get; set; } // <-- ДОБАВИТЬ ЭТО
+        public int Id { get; set; } 
         public string Name { get; set; } = ""; 
         public string LastName { get; set; } = ""; 
         public string Role { get; set; } = ""; 
