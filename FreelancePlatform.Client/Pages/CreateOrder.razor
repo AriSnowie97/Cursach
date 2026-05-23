@@ -5,116 +5,115 @@
 
 <PageTitle>Створити замовлення — Біржа</PageTitle>
 
-<div class="container mt-4">
-    <h2 class="mb-4">Створити нове замовлення 📝</h2>
-
-    @if (!UserState.IsLoggedIn || UserState.Role != "Customer")
-    {
-        <div class="alert alert-warning">
-            Ця сторінка доступна лише для Замовників. Будь ласка, увійдіть під відповідним акаунтом.
+<div class="container mt-5">
+    <div class="card shadow p-4 mx-auto" style="max-width: 600px; border-radius: 12px;">
+        <h3 class="text-center mb-4 fw-bold text-dark">💼 Нове замовлення</h3>
+        <p class="text-muted text-center small">Опишіть ваше завдання, щоб фрілансери могли запропонувати свої послуги</p>
+        
+        <div class="mb-3">
+            <label class="form-label fw-bold">Назва замовлення:</label>
+            <input type="text" class="form-control" placeholder="Наприклад: Розробка дизайну для мобільного додатку" @bind="newOrder.Title" />
         </div>
-    }
-    else
-    {
-        <div class="card shadow-sm p-4" style="max-width: 600px;">
-            <div class="mb-3">
-                <label class="form-label fw-bold">Назва проєкту:</label>
-                <input type="text" class="form-control" @bind="newOrder.Title" placeholder="Наприклад: Зробити дизайн лендінгу" />
-            </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Опис завдання:</label>
-                <textarea class="form-control" rows="5" @bind="newOrder.Description" placeholder="Опишіть деталі, вимоги та терміни..."></textarea>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label fw-bold">Бюджет ($):</label>
-                <input type="number" class="form-control" @bind="newOrder.Budget" />
-            </div>
-
-            <button class="btn btn-primary w-100" @onclick="SubmitOrder">
-                🚀 Опублікувати замовлення
-            </button>
-            
-            @if (showError)
-            {
-                <div class="alert alert-danger mt-3">Сталася помилка при збереженні. Перевірте консоль (F12).</div>
-            }
+        <div class="mb-3">
+            <label class="form-label fw-bold">Детальний опис завдання:</label>
+            <textarea class="form-control" rows="6" placeholder="Вкажіть вимоги, стек технологій або посилання на ТЗ..." @bind="newOrder.Description"></textarea>
         </div>
-    }
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Бюджет (грн):</label>
+            <div class="input-group">
+                <span class="input-group-text">💰</span>
+                <input type="number" class="form-control" placeholder="5000" @bind="newOrder.Budget" />
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorText))
+        {
+            <div class="alert alert-danger shadow-sm rounded-pill py-2 px-3 small">⚠️ @errorText</div>
+        }
+
+        @if (!string.IsNullOrEmpty(successText))
+        {
+            <div class="alert alert-success shadow-sm rounded-pill py-2 px-3 small">🟢 @successText</div>
+        }
+
+        <button class="btn btn-primary w-100 rounded-pill fw-bold py-2 mt-2" @onclick="HandleCreateOrder" disabled="@isLoading">
+            @(isLoading ? "Публікація..." : "Опублікувати замовлення")
+        </button>
+    </div>
 </div>
 
 @code {
-    private async Task HandleCreateOrder()
-{
-    errorMessage = "";
-    successMessage = "";
-
-    // ПРИМУСОВО ПІДСТАВЛЯЄМО ID ПОТОЧНОГО КОРИСТУВАЧА
-    orderModel.CustomerId = UserState.Id; 
-
-    // Лог для перевірки в браузері (ти побачиш його в консолі F12)
-    Console.WriteLine($"Надсилаємо замовлення з CustomerId: {orderModel.CustomerId}");
-
-    if (orderModel.CustomerId == 0)
-    {
-        errorMessage = "Помилка: Ваш профіль застарів. Будь ласка, перезайдіть в акаунт!";
-        return;
-    }
-
-    try
-    {
-        var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/orders", orderModel);
-
-        if (response.IsSuccessStatusCode)
-        {
-            successMessage = "🟢 Замовлення успішно створено й опубліковано!";
-            orderModel = new OrderModel(); // Очищаємо форму
-        }
-        else
-        {
-            errorMessage = await response.Content.ReadAsStringAsync();
-        }
-    }
-    catch (Exception ex)
-    {
-        errorMessage = "Помилка зв'язку з сервером.";
-    }
-}
     private OrderModel newOrder = new OrderModel();
-    private bool showError = false;
+    private string errorText = "";
+    private string successText = "";
+    private bool isLoading = false;
 
-    private async Task SubmitOrder()
+    private async Task HandleCreateOrder()
     {
+        errorText = "";
+        successText = "";
+
+        // Валідація полів перед відправкою
+        if (string.IsNullOrWhiteSpace(newOrder.Title) || string.IsNullOrWhiteSpace(newOrder.Description))
+        {
+            errorText = "Будь ласка, заповніть назву та опис замовлення.";
+            return;
+        }
+
+        if (newOrder.Budget <= 0)
+        {
+            errorText = "Бюджет повинен бути більшим за 0.";
+            return;
+        }
+
+        // Прив'язуємо замовлення до реального користувача з LocalStorage
+        newOrder.CustomerId = UserState.Id; 
+
+        if (newOrder.CustomerId == 0)
+        {
+            errorText = "Помилка авторизації: Ваш профіль застарів. Будь ласка, перезайдіть в акаунт!";
+            return;
+        }
+
+        isLoading = true;
+
         try
         {
-            // Відправляємо дані на наш новий контролер
-            newOrder.CustomerId = UserState.Id;
+            // Відправляємо POST запит на твій бекенд Railway
             var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/orders", newOrder);
-            
+
             if (response.IsSuccessStatusCode)
             {
-                // Якщо все добре, перекидаємо користувача на головну сторінку
-                Navigation.NavigateTo("/");
+                successText = "Замовлення успішно створено й опубліковано на головній сторінці!";
+                newOrder = new OrderModel(); // Очищаємо форму після успіху
             }
             else
             {
-                showError = true;
+                errorText = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(errorText))
+                {
+                    errorText = "Не вдалося зберегти замовлення. Перевірте з'єднання.";
+                }
             }
         }
-        catch
+        catch (Exception)
         {
-            showError = true;
+            errorText = "Помилка зв'язку з сервером.";
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
 
-    // Модель даних (має збігатися з моделлю на бекенді!)
     public class OrderModel
     {
         public string Title { get; set; } = "";
         public string Description { get; set; } = "";
         public decimal Budget { get; set; }
-        
-        public int CustomerId { get; set; } // <-- ДОБАВИТЬ ЭТО, чтобы ошибка CS1061 исчезла
+        public string Status { get; set; } = "Open"; // По замовчуванню відкритий
+        public int CustomerId { get; set; }
     }
 }
