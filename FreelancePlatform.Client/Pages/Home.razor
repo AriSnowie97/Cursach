@@ -1,26 +1,50 @@
 ﻿@page "/"
 @inject HttpClient Http
 
-<div class="container mt-4">
-    <h3>Список замовлень</h3>
-    @foreach (var order in orders)
-    {
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5>@order.Title</h5>
-                <p>Статус: @order.Status</p>
-                
-                @if (order.Status == "Open" && UserState.Role == "Freelancer")
-                {
-                    <button class='btn btn-sm btn-primary' @onclick='() => ChangeStatus(order.Id, "InProgress")'>Взяти в роботу</button>
-                }
-            </div>
+<PageTitle>Всі замовлення — Біржа</PageTitle>
+
+<main class="container mt-4">
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Активні проєкти</h2>
+            <button class="btn btn-outline-primary" @onclick="LoadOrders">🔄 Оновити список</button>
         </div>
-    }
-</div>
+        
+        <div id="ordersList">
+            @if (orders == null)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Завантаження замовлень...</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var order in orders)
+                {
+                    <NavLink href="@($"/order/{order.Id}")" class="card text-decoration-none mb-3" style="display: block; cursor: pointer; color: inherit;">
+                        <article class="card-body">
+                            <h3>@order.Title</h3>
+                            <p>@order.Description</p>
+                            <p class="budget">💰 Бюджет: $@order.Budget</p>
+                            <span class="badge @(order.Status == "Open" ? "bg-success" : "bg-warning")">@order.Status</span>
+                            
+                            @if (order.Status == "Open" && UserState.Role == "Freelancer")
+                            {
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-primary" @onclick='() => ChangeStatus(order.Id, "InProgress")' @onclick:stopPropagation>Взяти в роботу</button>
+                                </div>
+                            }
+                        </article>
+                    </NavLink>
+                }
+            }
+        </div>
+    </section>
+</main>
 
 @code {
-    private List<OrderModel> orders = new();
+    private List<Order> orders = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -29,18 +53,24 @@
 
     private async Task LoadOrders()
     {
-        try {
-            orders = await Http.GetFromJsonAsync<List<OrderModel>>("https://cursach-production.up.railway.app/api/orders") ?? new();
-        } catch (Exception ex) { Console.WriteLine(ex.Message); }
+        try 
+        {
+            orders = await Http.GetFromJsonAsync<List<Order>>("https://cursach-production.up.railway.app/api/orders") ?? new();
+        } 
+        catch (Exception ex) 
+        { 
+            Console.WriteLine($"Помилка завантаження: {ex.Message}"); 
+        }
     }
 
     private async Task ChangeStatus(int orderId, string newStatus)
     {
         await Http.PutAsJsonAsync($"https://cursach-production.up.railway.app/api/orders/{orderId}/status", newStatus);
-        await LoadOrders();
+        await LoadOrders(); // Оновлюємо список після зміни
     }
 
-    public class OrderModel {
+    public class Order
+    {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
