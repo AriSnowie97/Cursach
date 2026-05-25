@@ -21,23 +21,21 @@
         <div id="ordersList">
             @foreach (var order in orders)
             {
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
+                <NavLink href="@($"/order/{order.Id}")" class="card text-decoration-none mb-3" style="display: block; cursor: pointer; color: inherit;">
+                    <article class="card-body">
                         <h3>@order.Title</h3>
                         <p>@order.Description</p>
                         <p class="budget">💰 Бюджет: @order.Budget грн</p>
                         <span class="badge @(order.Status == "Open" ? "bg-success" : "bg-warning")">@order.Status</span>
                         
-                        <div class="mt-3">
-                            <a href="/order/@order.Id" class="btn btn-outline-secondary btn-sm">Деталі</a>
-
-                            @if (order.Status == "Open" && UserState.Role == "Freelancer")
-                            {
-                                <button class="btn btn-sm btn-primary ms-2" @onclick="() => ChangeStatus(order.Id, \"InProgress\")">Взяти в роботу</button>
-                            }
-                        </div>
-                    </div>
-                </div>
+                        @if (order.Status == "Open" && UserState.Role == "Freelancer")
+                        {
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-primary" @onclick='() => ChangeStatus(order.Id, "InProgress")' @onclick:stopPropagation>Взяти в роботу</button>
+                            </div>
+                        }
+                    </article>
+                </NavLink>
             }
         </div>
     }
