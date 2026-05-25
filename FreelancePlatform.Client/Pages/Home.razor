@@ -31,7 +31,7 @@
                         @if (order.Status == "Open" && UserState.Role == "Freelancer")
                         {
                             <div class="mt-3">
-                                <button class="btn btn-sm btn-primary" @onclick='() => ChangeStatus(order.Id, "InProgress")' @onclick:stopPropagation>Взяти в роботу</button>
+                                <button class="btn btn-sm btn-primary ms-2" @onclick='() => ChangeStatus(order.Id, "InProgress")' @onclick:stopPropagation>Взяти в роботу</button>
                             </div>
                         }
                     </article>
