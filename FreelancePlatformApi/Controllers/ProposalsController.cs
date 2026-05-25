@@ -49,5 +49,17 @@ namespace FreelancePlatformApi.Controllers
             await _context.SaveChangesAsync();
             return Ok(proposal);
         }
+
+        [HttpGet("order/{orderId}")]
+        public async Task<ActionResult<IEnumerable<Proposal>>> GetOrderProposals(int orderId)
+        {
+            // Получаем предложения конкретного заказа + информацию о фрилансере
+            var proposals = await _context.Proposals
+                .Include(p => p.Freelancer) 
+                .Where(p => p.OrderId == orderId)
+                .ToListAsync();
+
+            return Ok(proposals);
+        }
     }
 }
