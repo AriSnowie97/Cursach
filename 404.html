@@ -29,7 +29,12 @@
     </div>
     
     <link rel="stylesheet" href="style.css" />
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        // Сохраняем путь, на который хотел зайти пользователь
+        var path = window.location.pathname;
+        // Перенаправляем на index.html, но с параметром path
+        window.location.replace('/Cursach/' + '?path=' + path.replace('/Cursach/', ''));
+    </script>
 </body>
 
 </html>
