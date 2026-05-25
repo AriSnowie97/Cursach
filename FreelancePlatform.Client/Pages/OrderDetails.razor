@@ -1,3 +1,6 @@
+@page "/order/{Id:int}"
+@inject HttpClient Http  
+
 <div class="container mt-4 mb-5">
     @if (order == null)
     {
@@ -65,6 +68,12 @@
 
 @code {
     [Parameter] public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Теперь Http будет доступен, так как мы его заинжектили
+        order = await Http.GetFromJsonAsync<OrderModel>($"https://cursach-production.up.railway.app/api/orders/{Id}");
+    }
 
     private OrderModel? order;
     private List<OrderModel> orders = new(); // Список для відображення

@@ -19,14 +19,22 @@
             {
                 @foreach (var order in orders)
                 {
-                    <article class="card">
+    
+                <NavLink href="@($"/order/{order.Id}")" class="card text-decoration-none" style="display: block; cursor: pointer; color: inherit;">
+                    <article class="card-body">
                         <h3>@order.Title</h3>
                         <p>@order.Description</p>
                         <p class="budget">💰 Бюджет: $@order.Budget</p>
                         <span class="status-badge">@order.Status</span>
                     </article>
+                </NavLink>
                 }
             }
+            @if (o.Status == "Open" && UserState.Role == "Freelancer")
+{
+
+    <button class="btn btn-sm btn-primary" @onclick='() => ChangeStatus(o.Id, "InProgress")'>Взять в работу</button>
+}
         </div>
     </section>
 </main>
