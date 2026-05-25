@@ -64,6 +64,25 @@
     }
 </div>
 
+@foreach (var order in orders)
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5>@order.Title</h5>
+            <p>Статус: <span class="badge @(order.Status == "Open" ? "bg-success" : "bg-warning")">@order.Status</span></p>
+            
+            @if (order.Status == "Open" && UserState.Role == "Freelancer")
+            {
+                <button class="btn btn-sm btn-primary" @onclick="() => ChangeStatus(order.Id, "InProgress")">Взять в работу</button>
+            }
+            @if (order.Status == "InProgress" && UserState.Role == "Freelancer")
+            {
+                <button class="btn btn-sm btn-success" @onclick="() => ChangeStatus(order.Id, "Completed")">Завершить</button>
+            }
+        </div>
+    </div>
+}
+
 @code {
     [Parameter]
     public int Id { get; set; } // Отримуємо ID з URL
@@ -85,6 +104,18 @@
             Console.WriteLine($"Помилка: {ex.Message}");
         }
     }
+
+    private async Task ChangeStatus(int orderId, string newStatus)
+{
+    // Отправляем PUT запрос на изменение статуса
+    var response = await Http.PutAsJsonAsync($"https://cursach-production.up.railway.app/api/orders/{orderId}/status", newStatus);
+    
+    if (response.IsSuccessStatusCode)
+    {
+        // Перезагружаем список заказов, чтобы обновить UI
+        await LoadOrders(); 
+    }
+}
 
     private async Task SubmitProposal()
     {
