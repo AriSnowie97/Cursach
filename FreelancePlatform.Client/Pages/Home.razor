@@ -1,16 +1,12 @@
-﻿@page "/order/{Id:int}"
+﻿@page "/"
 @inject HttpClient Http
 
 <div class="container mt-4 mb-5">
-    @if (Id == 0)
-    {
-        <div class="alert alert-danger">❌ Помилка: ID замовлення не передано (ID=0).</div>
-    }
-    else if (order == null)
+    @if (order == null)
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Завантаження даних замовлення...</p>
+            <p class="mt-2 text-muted">Завантаження...</p>
         </div>
     }
     else
@@ -26,29 +22,18 @@
             </div>
         </div>
 
-        @if (UserState.IsLoggedIn)
+        @if (UserState.IsLoggedIn && UserState.Role == "Freelancer" && order.Status == "Open")
         {
-            @if (UserState.Role == "Freelancer" && order.Status == "Open")
-            {
-                <div class="card shadow-sm border-primary mb-4">
-                    <div class="card-header bg-primary text-white">📝 Залишити пропозицію</div>
-                    <div class="card-body p-4">
-                        <textarea class="form-control mb-3" rows="4" @bind="proposalText" placeholder="Напишіть ваш відгук..."></textarea>
-                        <button class="btn btn-primary" @onclick="SubmitProposal" disabled="@isSubmitting">
-                            @(isSubmitting ? "Відправка..." : "Відправити")
-                        </button>
-                        @if (showSuccess) { <span class="text-success ms-3">✅ Успішно!</span> }
-                    </div>
+            <div class="card shadow-sm border-primary mb-4">
+                <div class="card-header bg-primary text-white">📝 Залишити пропозицію</div>
+                <div class="card-body p-4">
+                    <textarea class="form-control mb-3" rows="4" @bind="proposalText" placeholder="Напишіть ваш відгук..."></textarea>
+                    <button class="btn btn-primary" @onclick="SubmitProposal" disabled="@isSubmitting">
+                        @(isSubmitting ? "Відправка..." : "Відправити")
+                    </button>
+                    @if (showSuccess) { <span class="text-success ms-3">✅ Успішно!</span> }
                 </div>
-            }
-            else if (UserState.Role == "Customer")
-            {
-                <div class="alert alert-info">ℹ️ Ви увійшли як Замовник.</div>
-            }
-        }
-        else
-        {
-            <div class="alert alert-warning">Для відгуку потрібно увійти в систему.</div>
+            </div>
         }
     }
 </div>
@@ -60,38 +45,29 @@
     private bool isSubmitting = false;
     private bool showSuccess = false;
 
+    // ОДИН единственный метод инициализации
     protected override async Task OnInitializedAsync()
     {
-        // Проверяем ID перед запросом
-        if (Id != 0)
-        {
-            await LoadOrderDetails();
-        }
+        await LoadOrderDetails();
     }
 
     private async Task LoadOrderDetails()
     {
         try {
-            // Если тут падает 404, смотри в консоль браузера (F12 -> Network)
             order = await Http.GetFromJsonAsync<OrderModel>($"https://cursach-production.up.railway.app/api/orders/{Id}");
-        } catch (Exception ex) { 
-            Console.WriteLine("Помилка API: " + ex.Message);
-            order = null; // Принудительно сбрасываем
-        }
+        } catch (Exception ex) { Console.WriteLine(ex.Message); }
     }
 
     private async Task SubmitProposal()
     {
         if (string.IsNullOrWhiteSpace(proposalText)) return;
         isSubmitting = true;
-        
         var newProposal = new {
             OrderId = this.Id,
             FreelancerName = $"{UserState.Name} {UserState.LastName}",
             Text = proposalText,
             Price = order?.Budget
         };
-        
         var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/proposals", newProposal);
         if (response.IsSuccessStatusCode) {
             showSuccess = true;
