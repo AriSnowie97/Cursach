@@ -2,17 +2,15 @@
 @inject HttpClient Http
 
 <div class="container mt-4 mb-5">
-    @if (errorMessage != null)
+    @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="alert alert-danger">
-            <strong>Помилка:</strong> @errorMessage
-        </div>
+        <div class="alert alert-danger">❌ Помилка: @errorMessage</div>
     }
     else if (order == null)
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Завантаження даних замовлення...</p>
+            <p class="mt-2 text-muted">Завантаження...</p>
         </div>
     }
     else
@@ -41,41 +39,40 @@
                 </div>
             </div>
         }
-        else if (UserState.Role == "Customer")
-        {
-            <div class="alert alert-info">ℹ️ Ви увійшли як Замовник.</div>
-        }
     }
 </div>
 
 @code {
     [Parameter] public int Id { get; set; }
+    
+    // Оголошуємо змінні, щоб помилки не було
     private OrderModel? order;
+    private string? errorMessage; 
     private string proposalText = "";
     private bool isSubmitting = false;
     private bool showSuccess = false;
 
-    // ВИДАЛИ OnInitializedAsync, замість нього використовуй це:
     protected override async Task OnParametersSetAsync()
     {
-        // Цей метод викликається кожного разу, коли змінюється Id в URL
-        if (Id > 0) 
+        if (Id > 0)
         {
             await LoadOrderDetails();
+        }
+        else
+        {
+            errorMessage = "Некоректний ID замовлення.";
         }
     }
 
     private async Task LoadOrderDetails()
     {
         try {
-            // Зроби Console.WriteLine, щоб побачити в F12 -> Console, який ID приходить
-            Console.WriteLine($"DEBUG: Завантажую замовлення з ID: {Id}");
-            
+            errorMessage = null; // Скидаємо помилку перед запитом
             order = await Http.GetFromJsonAsync<OrderModel>($"https://cursach-production.up.railway.app/api/orders/{Id}");
         } 
         catch (Exception ex) { 
-            Console.WriteLine($"Помилка API для ID {Id}: {ex.Message}");
-            order = null;
+            errorMessage = "Замовлення не знайдено або сервер недоступний.";
+            Console.WriteLine(ex.Message); 
         }
     }
 
@@ -98,7 +95,7 @@
                 proposalText = "";
             }
         } catch (Exception ex) {
-            Console.WriteLine("Помилка відправки: " + ex.Message);
+            Console.WriteLine(ex.Message);
         }
         isSubmitting = false;
     }
