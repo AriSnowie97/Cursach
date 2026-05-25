@@ -57,5 +57,7 @@
             document.cookie = name + "=; Max-Age=-99999999; path=/;";
         }
     };
+    var path = window.location.pathname;
+    window.location.replace('/Cursach/' + '?path=' + path.replace('/Cursach/', ''));
 </script>
 </html>
