@@ -51,26 +51,31 @@
 @code {
     [Parameter] public int Id { get; set; }
     private OrderModel? order;
-    private string? errorMessage;
     private string proposalText = "";
     private bool isSubmitting = false;
     private bool showSuccess = false;
 
-    protected override async Task OnInitializedAsync()
+    // ВИДАЛИ OnInitializedAsync, замість нього використовуй це:
+    protected override async Task OnParametersSetAsync()
     {
-        await LoadOrderDetails();
+        // Цей метод викликається кожного разу, коли змінюється Id в URL
+        if (Id > 0) 
+        {
+            await LoadOrderDetails();
+        }
     }
 
     private async Task LoadOrderDetails()
     {
         try {
-            // Очищуємо помилку перед новим запитом
-            errorMessage = null; 
+            // Зроби Console.WriteLine, щоб побачити в F12 -> Console, який ID приходить
+            Console.WriteLine($"DEBUG: Завантажую замовлення з ID: {Id}");
+            
             order = await Http.GetFromJsonAsync<OrderModel>($"https://cursach-production.up.railway.app/api/orders/{Id}");
         } 
         catch (Exception ex) { 
-            errorMessage = "Не вдалося завантажити замовлення. Перевірте з'єднання або ID.";
-            Console.WriteLine(ex.Message); 
+            Console.WriteLine($"Помилка API для ID {Id}: {ex.Message}");
+            order = null;
         }
     }
 
