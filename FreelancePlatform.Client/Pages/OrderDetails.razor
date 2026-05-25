@@ -13,13 +13,12 @@
     {
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <h2 class="card-title fw-bold mb-0">@order.Title</h2>
-                    <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">💰 @order.Budget грн</span>
-                </div>
+                <h2 class="card-title fw-bold">@order.Title</h2>
+                <span class="badge bg-success">💰 @order.Budget грн</span>
                 <hr />
-                <h5>Опис завдання:</h5>
-                <p style="white-space: pre-wrap;">@order.Description</p>
+                <h5>Опис:</h5>
+                <p>@order.Description</p>
+                <p>Статус: <strong>@order.Status</strong></p>
             </div>
         </div>
 
@@ -46,6 +45,7 @@
     private bool isSubmitting = false;
     private bool showSuccess = false;
 
+    // ОДИН единственный метод инициализации
     protected override async Task OnInitializedAsync()
     {
         await LoadOrderDetails();
