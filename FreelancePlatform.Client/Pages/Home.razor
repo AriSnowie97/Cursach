@@ -1,83 +1,80 @@
 ﻿@page "/"
 @inject HttpClient Http
 
-<div class="container mt-4 mb-5">
-    @if (order == null)
+<PageTitle>Всі замовлення — Біржа</PageTitle>
+
+<main class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Активні проєкти</h2>
+        <button class="btn btn-outline-primary" @onclick="LoadOrders">🔄 Оновити</button>
+    </div>
+
+    @if (orders == null)
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Завантаження...</p>
+            <p class="mt-2 text-muted">Завантаження замовлень...</p>
         </div>
     }
     else
     {
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body p-4">
-                <h2 class="card-title fw-bold">@order.Title</h2>
-                <span class="badge bg-success">💰 @order.Budget грн</span>
-                <hr />
-                <h5>Опис:</h5>
-                <p>@order.Description</p>
-                <p>Статус: <strong>@order.Status</strong></p>
-            </div>
-        </div>
+        <div id="ordersList">
+            @foreach (var order in orders)
+            {
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h3>@order.Title</h3>
+                        <p>@order.Description</p>
+                        <p class="budget">💰 Бюджет: @order.Budget грн</p>
+                        <span class="badge @(order.Status == "Open" ? "bg-success" : "bg-warning")">@order.Status</span>
+                        
+                        <div class="mt-3">
+                            <a href="/order/@order.Id" class="btn btn-outline-secondary btn-sm">Деталі</a>
 
-        @if (UserState.IsLoggedIn && UserState.Role == "Freelancer" && order.Status == "Open")
-        {
-            <div class="card shadow-sm border-primary mb-4">
-                <div class="card-header bg-primary text-white">📝 Залишити пропозицію</div>
-                <div class="card-body p-4">
-                    <textarea class="form-control mb-3" rows="4" @bind="proposalText" placeholder="Напишіть ваш відгук..."></textarea>
-                    <button class="btn btn-primary" @onclick="SubmitProposal" disabled="@isSubmitting">
-                        @(isSubmitting ? "Відправка..." : "Відправити")
-                    </button>
-                    @if (showSuccess) { <span class="text-success ms-3">✅ Успішно!</span> }
+                            @if (order.Status == "Open" && UserState.Role == "Freelancer")
+                            {
+                                <button class="btn btn-sm btn-primary ms-2" @onclick="() => ChangeStatus(order.Id, \"InProgress\")">Взяти в роботу</button>
+                            }
+                        </div>
+                    </div>
                 </div>
-            </div>
-        }
-        
+            }
+        </div>
     }
-</div>
+</main>
 
 @code {
-    [Parameter] public int Id { get; set; }
-    private OrderModel? order;
-    private string proposalText = "";
-    private bool isSubmitting = false;
-    private bool showSuccess = false;
+    private List<OrderModel> orders = new();
 
-    // ОДИН единственный метод инициализации
     protected override async Task OnInitializedAsync()
     {
-        await LoadOrderDetails();
+        await LoadOrders();
     }
 
-    private async Task LoadOrderDetails()
+    private async Task LoadOrders()
     {
-        try {
-            order = await Http.GetFromJsonAsync<OrderModel>($"https://cursach-production.up.railway.app/api/orders/{Id}");
-        } catch (Exception ex) { Console.WriteLine(ex.Message); }
-    }
-
-    private async Task SubmitProposal()
-    {
-        if (string.IsNullOrWhiteSpace(proposalText)) return;
-        isSubmitting = true;
-        var newProposal = new {
-            OrderId = this.Id,
-            FreelancerName = $"{UserState.Name} {UserState.LastName}",
-            Text = proposalText,
-            Price = order?.Budget
-        };
-        var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/proposals", newProposal);
-        if (response.IsSuccessStatusCode) {
-            showSuccess = true;
-            proposalText = "";
+        try 
+        {
+            orders = await Http.GetFromJsonAsync<List<OrderModel>>("https://cursach-production.up.railway.app/api/orders") ?? new();
+        } 
+        catch (Exception ex) 
+        { 
+            Console.WriteLine($"Помилка завантаження: {ex.Message}"); 
         }
-        isSubmitting = false;
     }
 
-    public class OrderModel {
+    private async Task ChangeStatus(int orderId, string newStatus)
+    {
+        // Відправляємо PUT запит
+        var response = await Http.PutAsJsonAsync($"https://cursach-production.up.railway.app/api/orders/{orderId}/status", newStatus);
+        if (response.IsSuccessStatusCode) 
+        {
+            await LoadOrders(); // Оновлюємо список після зміни
+        }
+    }
+
+    public class OrderModel
+    {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
