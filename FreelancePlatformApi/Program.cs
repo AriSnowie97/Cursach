@@ -7,12 +7,10 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Налаштовуємо CORS (дозволяємо фронтенду стукатися до нас)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()   // Дозволяємо будь-який сайт (у тому числі GitHub)
-              .AllowAnyMethod()   // Дозволяємо GET, POST тощо
-              .AllowAnyHeader();  // Дозволяємо будь-які заголовки
-    });
+    options.AddPolicy("AllowGitHubPages",
+        policy => policy.WithOrigins("https://arisnowie97.github.io")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -21,6 +19,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+app.UseCors("AllowGitHubPages");
 
 // --- ДОБАВЛЯЕМ АВТО-ОБНОВЛЕНИЕ БАЗЫ ДАННЫХ ---
 using (var scope = app.Services.CreateScope())
