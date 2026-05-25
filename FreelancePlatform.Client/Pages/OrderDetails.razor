@@ -2,9 +2,11 @@
 @inject HttpClient Http
 
 <div class="container mt-4 mb-5">
-    @if (Id == 0)
+    @if (errorMessage != null)
     {
-        <div class="alert alert-danger">❌ Помилка: ID замовлення не передано (ID=0).</div>
+        <div class="alert alert-danger">
+            <strong>Помилка:</strong> @errorMessage
+        </div>
     }
     else if (order == null)
     {
@@ -26,29 +28,22 @@
             </div>
         </div>
 
-        @if (UserState.IsLoggedIn)
+        @if (UserState.IsLoggedIn && UserState.Role == "Freelancer" && order.Status == "Open")
         {
-            @if (UserState.Role == "Freelancer" && order.Status == "Open")
-            {
-                <div class="card shadow-sm border-primary mb-4">
-                    <div class="card-header bg-primary text-white">📝 Залишити пропозицію</div>
-                    <div class="card-body p-4">
-                        <textarea class="form-control mb-3" rows="4" @bind="proposalText" placeholder="Напишіть ваш відгук..."></textarea>
-                        <button class="btn btn-primary" @onclick="SubmitProposal" disabled="@isSubmitting">
-                            @(isSubmitting ? "Відправка..." : "Відправити")
-                        </button>
-                        @if (showSuccess) { <span class="text-success ms-3">✅ Успішно!</span> }
-                    </div>
+            <div class="card shadow-sm border-primary mb-4">
+                <div class="card-header bg-primary text-white">📝 Залишити пропозицію</div>
+                <div class="card-body p-4">
+                    <textarea class="form-control mb-3" rows="4" @bind="proposalText" placeholder="Напишіть ваш відгук..."></textarea>
+                    <button class="btn btn-primary" @onclick="SubmitProposal" disabled="@isSubmitting">
+                        @(isSubmitting ? "Відправка..." : "Відправити")
+                    </button>
+                    @if (showSuccess) { <span class="text-success ms-3">✅ Успішно!</span> }
                 </div>
-            }
-            else if (UserState.Role == "Customer")
-            {
-                <div class="alert alert-info">ℹ️ Ви увійшли як Замовник.</div>
-            }
+            </div>
         }
-        else
+        else if (UserState.Role == "Customer")
         {
-            <div class="alert alert-warning">Для відгуку потрібно увійти в систему.</div>
+            <div class="alert alert-info">ℹ️ Ви увійшли як Замовник.</div>
         }
     }
 </div>
@@ -56,27 +51,26 @@
 @code {
     [Parameter] public int Id { get; set; }
     private OrderModel? order;
+    private string? errorMessage;
     private string proposalText = "";
     private bool isSubmitting = false;
     private bool showSuccess = false;
 
     protected override async Task OnInitializedAsync()
     {
-        // Проверяем ID перед запросом
-        if (Id != 0)
-        {
-            await LoadOrderDetails();
-        }
+        await LoadOrderDetails();
     }
 
     private async Task LoadOrderDetails()
     {
         try {
-            // Если тут падает 404, смотри в консоль браузера (F12 -> Network)
+            // Очищуємо помилку перед новим запитом
+            errorMessage = null; 
             order = await Http.GetFromJsonAsync<OrderModel>($"https://cursach-production.up.railway.app/api/orders/{Id}");
-        } catch (Exception ex) { 
-            Console.WriteLine("Помилка API: " + ex.Message);
-            order = null; // Принудительно сбрасываем
+        } 
+        catch (Exception ex) { 
+            errorMessage = "Не вдалося завантажити замовлення. Перевірте з'єднання або ID.";
+            Console.WriteLine(ex.Message); 
         }
     }
 
@@ -92,10 +86,14 @@
             Price = order?.Budget
         };
         
-        var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/proposals", newProposal);
-        if (response.IsSuccessStatusCode) {
-            showSuccess = true;
-            proposalText = "";
+        try {
+            var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/proposals", newProposal);
+            if (response.IsSuccessStatusCode) {
+                showSuccess = true;
+                proposalText = "";
+            }
+        } catch (Exception ex) {
+            Console.WriteLine("Помилка відправки: " + ex.Message);
         }
         isSubmitting = false;
     }
