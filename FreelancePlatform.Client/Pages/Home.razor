@@ -12,7 +12,7 @@
                 
                 @if (order.Status == "Open" && UserState.Role == "Freelancer")
                 {
-                    <button class="btn btn-primary" @onclick="() => ChangeStatus(order.Id, \"InProgress\")">Взяти в роботу</button>
+                    <button class='btn btn-sm btn-primary' @onclick='() => ChangeStatus(order.Id, "InProgress")'>Взяти в роботу</button>
                 }
             </div>
         </div>

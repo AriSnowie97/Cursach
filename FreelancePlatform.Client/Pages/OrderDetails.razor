@@ -1,5 +1,5 @@
 @page "/order/{Id:int}"
-@inject HttpClient Http  
+@inject HttpClient Http
 
 <div class="container mt-4 mb-5">
     @if (order == null)
@@ -18,48 +18,21 @@
                     <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">💰 @order.Budget грн</span>
                 </div>
                 <hr />
-                <h5 class="fw-bold mt-4">Опис завдання:</h5>
-                <p class="card-text" style="white-space: pre-wrap;">@order.Description</p>
-                <div class="mt-4 text-muted small">
-                    <strong>Статус:</strong> @(order.Status == "Open" ? "🟢 Відкрито для пропозицій" : "🔴 В роботі/Закрито")
-                </div>
+                <h5>Опис завдання:</h5>
+                <p style="white-space: pre-wrap;">@order.Description</p>
             </div>
         </div>
 
         @if (UserState.IsLoggedIn && UserState.Role == "Freelancer" && order.Status == "Open")
         {
             <div class="card shadow-sm border-primary mb-4">
-                <div class="card-header bg-primary text-white fw-bold">📝 Залишити пропозицію</div>
+                <div class="card-header bg-primary text-white">📝 Залишити пропозицію</div>
                 <div class="card-body p-4">
                     <textarea class="form-control mb-3" rows="4" @bind="proposalText" placeholder="Напишіть ваш відгук..."></textarea>
-                    <button class="btn btn-primary px-4 rounded-pill" @onclick="SubmitProposal" disabled="@isSubmitting">
-                        @(isSubmitting ? "Відправка..." : "Відправити пропозицію")
+                    <button class="btn btn-primary" @onclick="SubmitProposal" disabled="@isSubmitting">
+                        @(isSubmitting ? "Відправка..." : "Відправити")
                     </button>
-                    @if (showSuccess) { <span class="text-success ms-3 fw-bold">✅ Успішно!</span> }
-                </div>
-            </div>
-        }
-        else if (UserState.Role == "Customer")
-        {
-            <div class="alert alert-info shadow-sm mb-4">ℹ️ <strong>Ви увійшли як Замовник.</strong></div>
-        }
-
-        <h4 class="mt-5">Інші замовлення:</h4>
-        @foreach (var o in orders)
-        {
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5>@o.Title</h5>
-                    <p>Статус: <span class="badge @(o.Status == "Open" ? "bg-success" : "bg-warning")">@o.Status</span></p>
-                    
-                    @if (o.Status == "Open" && UserState.Role == "Freelancer")
-                    {
-                        <button class="btn btn-sm btn-primary" @onclick="() => ChangeStatus(o.Id, "InProgress")">Взяти в роботу</button>
-                    }
-                    @if (o.Status == "InProgress" && UserState.Role == "Freelancer")
-                    {
-                        <button class="btn btn-sm btn-success" @onclick="() => ChangeStatus(o.Id, "Completed")">Завершити</button>
-                    }
+                    @if (showSuccess) { <span class="text-success ms-3">✅ Успішно!</span> }
                 </div>
             </div>
         }
@@ -69,29 +42,19 @@
 @code {
     [Parameter] public int Id { get; set; }
     private OrderModel? order;
-    private List<ProposalModel> proposals = new();
     private string proposalText = "";
     private bool isSubmitting = false;
     private bool showSuccess = false;
 
     protected override async Task OnInitializedAsync()
     {
-        // Вызываем все нужные загрузки в одном методе
         await LoadOrderDetails();
-        await LoadProposals();
     }
 
     private async Task LoadOrderDetails()
     {
         try {
             order = await Http.GetFromJsonAsync<OrderModel>($"https://cursach-production.up.railway.app/api/orders/{Id}");
-        } catch (Exception ex) { Console.WriteLine(ex.Message); }
-    }
-
-    private async Task LoadProposals()
-    {
-        try {
-            proposals = await Http.GetFromJsonAsync<List<ProposalModel>>($"https://cursach-production.up.railway.app/api/proposals/order/{Id}") ?? new();
         } catch (Exception ex) { Console.WriteLine(ex.Message); }
     }
 
@@ -109,7 +72,6 @@
         if (response.IsSuccessStatusCode) {
             showSuccess = true;
             proposalText = "";
-            await LoadProposals();
         }
         isSubmitting = false;
     }
@@ -120,12 +82,5 @@
         public string Description { get; set; } = string.Empty;
         public decimal Budget { get; set; }
         public string Status { get; set; } = "Open";
-    }
-
-    public class ProposalModel {
-        public int Id { get; set; }
-        public string FreelancerName { get; set; } = string.Empty;
-        public string Text { get; set; } = string.Empty;
-        public decimal Price { get; set; }
     }
 }
