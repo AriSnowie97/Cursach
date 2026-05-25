@@ -68,19 +68,16 @@
 
 @code {
     [Parameter] public int Id { get; set; }
-
     private OrderModel? order;
-    private List<OrderModel> orders = new(); 
-    private List<ProposalModel> proposals = new(); 
+    private List<ProposalModel> proposals = new();
     private string proposalText = "";
     private bool isSubmitting = false;
     private bool showSuccess = false;
 
-    // Объединенный метод инициализации
     protected override async Task OnInitializedAsync()
     {
+        // Вызываем все нужные загрузки в одном методе
         await LoadOrderDetails();
-        await LoadOrders();
         await LoadProposals();
     }
 
@@ -88,52 +85,36 @@
     {
         try {
             order = await Http.GetFromJsonAsync<OrderModel>($"https://cursach-production.up.railway.app/api/orders/{Id}");
-        } catch (Exception ex) { Console.WriteLine($"Error loading order: {ex.Message}"); }
-    }
-
-    private async Task LoadOrders()
-    {
-        try {
-            orders = await Http.GetFromJsonAsync<List<OrderModel>>("https://cursach-production.up.railway.app/api/orders") ?? new();
-        } catch (Exception ex) { Console.WriteLine($"Error loading orders: {ex.Message}"); }
+        } catch (Exception ex) { Console.WriteLine(ex.Message); }
     }
 
     private async Task LoadProposals()
     {
         try {
             proposals = await Http.GetFromJsonAsync<List<ProposalModel>>($"https://cursach-production.up.railway.app/api/proposals/order/{Id}") ?? new();
-        } catch (Exception ex) { Console.WriteLine($"Error loading proposals: {ex.Message}"); }
-    }
-
-    private async Task ChangeStatus(int orderId, string newStatus)
-    {
-        var response = await Http.PutAsJsonAsync($"https://cursach-production.up.railway.app/api/orders/{orderId}/status", newStatus);
-        if (response.IsSuccessStatusCode) await LoadOrders();
+        } catch (Exception ex) { Console.WriteLine(ex.Message); }
     }
 
     private async Task SubmitProposal()
     {
         if (string.IsNullOrWhiteSpace(proposalText)) return;
         isSubmitting = true;
-
         var newProposal = new {
             OrderId = this.Id,
             FreelancerName = $"{UserState.Name} {UserState.LastName}",
             Text = proposalText,
             Price = order?.Budget
         };
-
         var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/proposals", newProposal);
         if (response.IsSuccessStatusCode) {
             showSuccess = true;
             proposalText = "";
-            await LoadProposals(); // Обновляем список после успешной отправки
+            await LoadProposals();
         }
         isSubmitting = false;
     }
 
-    public class OrderModel
-    {
+    public class OrderModel {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
@@ -141,8 +122,7 @@
         public string Status { get; set; } = "Open";
     }
 
-    public class ProposalModel
-    {
+    public class ProposalModel {
         public int Id { get; set; }
         public string FreelancerName { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;

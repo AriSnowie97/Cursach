@@ -1,67 +1,50 @@
 ﻿@page "/"
 @inject HttpClient Http
 
-<PageTitle>Всі замовлення — Біржа</PageTitle>
-
-<main class="container">
-    <section>
-        <h2>Активні проєкти</h2>
-        <button class="btn-update" @onclick="LoadOrders">Оновити список</button>
-        
-        <div id="ordersList">
-            @if (orders == null)
-            {
-                <div style="text-align: center; padding: 30px;">
-                    <h3 style="color: #1a73e8;">⏳ Завантаження замовлень...</h3>
-                </div>
-            }
-            else
-            {
-                @foreach (var order in orders)
+<div class="container mt-4">
+    <h3>Список замовлень</h3>
+    @foreach (var order in orders)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>@order.Title</h5>
+                <p>Статус: @order.Status</p>
+                
+                @if (order.Status == "Open" && UserState.Role == "Freelancer")
                 {
-    
-                <NavLink href="@($"/order/{order.Id}")" class="card text-decoration-none" style="display: block; cursor: pointer; color: inherit;">
-                    <article class="card-body">
-                        <h3>@order.Title</h3>
-                        <p>@order.Description</p>
-                        <p class="budget">💰 Бюджет: $@order.Budget</p>
-                        <span class="status-badge">@order.Status</span>
-                    </article>
-                </NavLink>
+                    <button class="btn btn-primary" @onclick="() => ChangeStatus(order.Id, \"InProgress\")">Взяти в роботу</button>
                 }
-            }
-            @if (o.Status == "Open" && UserState.Role == "Freelancer")
-{
-
-    <button class="btn btn-sm btn-primary" @onclick='() => ChangeStatus(o.Id, "InProgress")'>Взять в работу</button>
-}
+            </div>
         </div>
-    </section>
-</main>
+    }
+</div>
 
 @code {
-    // Жодного JavaScript! Усі змінні пишемо на C#
-    private List<Order>? orders;
+    private List<OrderModel> orders = new();
 
-    // Цей метод автоматично запускається при відкритті сторінки (як наш будильник раніше)
     protected override async Task OnInitializedAsync()
     {
         await LoadOrders();
     }
 
-    // А ОСЬ І ВІН — твій метод!
     private async Task LoadOrders()
     {
-        orders = await Http.GetFromJsonAsync<List<Order>>("https://cursach-production.up.railway.app/api/orders");
+        try {
+            orders = await Http.GetFromJsonAsync<List<OrderModel>>("https://cursach-production.up.railway.app/api/orders") ?? new();
+        } catch (Exception ex) { Console.WriteLine(ex.Message); }
     }
 
-    // Описуємо структуру замовлення, щоб Blazor розумів, які дані прийдуть
-    public class Order
+    private async Task ChangeStatus(int orderId, string newStatus)
     {
+        await Http.PutAsJsonAsync($"https://cursach-production.up.railway.app/api/orders/{orderId}/status", newStatus);
+        await LoadOrders();
+    }
+
+    public class OrderModel {
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public decimal Budget { get; set; }
-        public string Status { get; set; }
+        public string Status { get; set; } = "Open";
     }
 }
