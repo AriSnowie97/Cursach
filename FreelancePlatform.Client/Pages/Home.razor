@@ -31,7 +31,17 @@
                         @if (order.Status == "Open" && UserState.Role == "Freelancer")
                         {
                             <div class="mt-3">
-                                <button class="btn btn-sm btn-primary ms-2" @onclick='() => ChangeStatus(order.Id, "InProgress")' @onclick:stopPropagation>Взяти в роботу</button>
+                                @inject NavigationManager NavigationManager
+
+                                <!-- Внутри цикла foreach по заказам -->
+                                <button class="btn btn-success" @onclick="() => TakeJob(order.Id)">Взять в работу</button>
+
+                                @code {
+                                    private void TakeJob(int orderId)
+                                    {
+                                        NavigationManager.NavigateTo($"/order-details/{orderId}");
+                                    }
+                                }
                             </div>
                         }
                     </article>

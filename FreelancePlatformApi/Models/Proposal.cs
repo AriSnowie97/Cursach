@@ -3,7 +3,7 @@ namespace FreelancePlatformApi.Models
     public class Proposal
     {
         public int Id { get; set; }
-        public string CoverLetter { get; set; } = string.Empty;
+        public string CoverLetter { get; set; }
         public decimal Price { get; set; }
         public int DeliveryDays { get; set; }
 

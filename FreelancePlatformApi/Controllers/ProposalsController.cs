@@ -61,5 +61,19 @@ namespace FreelancePlatformApi.Controllers
 
             return Ok(proposals);
         }
+
+        [HttpPost]
+        public async Task<ActionResult<Proposal>> PostProposal(Proposal proposal)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _context.Proposals.Add(proposal);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetProposal", new { id = proposal.Id }, proposal);
+        }
     }
 }

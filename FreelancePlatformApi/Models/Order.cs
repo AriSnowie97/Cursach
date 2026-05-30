@@ -14,6 +14,6 @@ namespace FreelancePlatformApi.Models
         public User? Customer { get; set; }
 
         // Отклики на этот заказ
-        public List<Proposal> Proposals { get; set; } = new();
+        public ICollection<Proposal> Proposals { get; set; } = new List<Proposal>();
     }
 }

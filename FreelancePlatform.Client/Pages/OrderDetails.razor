@@ -1,110 +1,155 @@
-@page "/order/{Id:int}"
+@page "/order-details/{Id:int}"
 @inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject UserState UserState // Хранилище состояния авторизованного пользователя
 
-<div class="container mt-4 mb-5">
-    @if (!string.IsNullOrEmpty(errorMessage))
+<div class="container mt-4">
+    @if (order == null)
     {
-        <div class="alert alert-danger">❌ Помилка: @errorMessage</div>
-    }
-    else if (order == null)
-    {
-        <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Завантаження...</p>
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка данных заказа...</span>
         </div>
     }
     else
     {
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body p-4">
-                <h2 class="card-title fw-bold">@order.Title</h2>
-                <span class="badge bg-success">💰 @order.Budget грн</span>
-                <hr />
-                <h5>Опис:</h5>
-                <p>@order.Description</p>
-                <p>Статус: <strong>@order.Status</strong></p>
+        <!-- Карточка заказа -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">@order.Title</h3>
+            </div>
+            <div class="card-body">
+                <p class="lead">@order.Description</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Бюджет:</strong> @order.Budget руб.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Статус заказа:</strong> <span class="badge bg-info">@order.Status</span></p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        @if (UserState.IsLoggedIn && UserState.Role == "Freelancer" && order.Status == "Open")
+        <!-- Отображение ошибок или успеха -->
+        @if (!string.IsNullOrEmpty(errorMessage))
         {
-            <div class="card shadow-sm border-primary mb-4">
-                <div class="card-header bg-primary text-white">📝 Залишити пропозицію</div>
-                <div class="card-body p-4">
-                    <textarea class="form-control mb-3" rows="4" @bind="proposalText" placeholder="Напишіть ваш відгук..."></textarea>
-                    <button class="btn btn-primary" @onclick="SubmitProposal" disabled="@isSubmitting">
-                        @(isSubmitting ? "Відправка..." : "Відправити")
-                    </button>
-                    @if (showSuccess) { <span class="text-success ms-3">✅ Успішно!</span> }
-                </div>
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+        @if (isSuccess)
+        {
+            <div class="alert alert-success">Ваш отклик успешно отправлен!</div>
+        }
+
+        <!-- Форма предложения для Фрилансеров -->
+        @if (UserState.IsLoggedIn && UserState.Role == "Freelancer") 
+        {
+            <div class="card p-4 mb-4 shadow-sm">
+                <h4>Предложить свои услуги к выполнению</h4>
+                <EditForm Model="@newProposal" OnValidSubmit="SendProposal">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Предлагаемая цена (руб.):</label>
+                        <InputNumber @bind-Value="newProposal.Price" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Сопроводительное письмо / Ваше решение:</label>
+                        <InputTextArea @bind-Value="newProposal.CoverLetter" class="form-control" rows="3" placeholder="Опишите ваш опыт или как вы планируете выполнить задачу..." />
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Отправить предложение</button>
+                </EditForm>
+            </div>
+        }
+        else if (!UserState.IsLoggedIn)
+        {
+            <div class="alert alert-warning">
+                Чтобы взять заказ в работу, пожалуйста, <a href="/login">авторизуйтесь</a>.
+            </div>
+        }
+
+        <!-- Список уже имеющихся предложений к этому заказу -->
+        <h4 class="mt-4">Отклики других фрилансеров:</h4>
+        @if (order.Proposals == null || !order.Proposals.Any())
+        {
+            <p class="text-muted">К этому заказу еще нет предложений. Будьте первыми!</p>
+        }
+        else
+        {
+            <div class="list-group">
+                @foreach (var proposal in order.Proposals)
+                {
+                    <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center mb-2 shadow-xs">
+                        <div>
+                            <p class="mb-1">@proposal.CoverLetter</p>
+                            <small class="text-muted">Отправитель ID: @proposal.FreelancerId</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">@proposal.Price руб.</span>
+                    </div>
+                }
             </div>
         }
     }
 </div>
 
 @code {
-    [Parameter] public int Id { get; set; }
-    
-    // Оголошуємо змінні, щоб помилки не було
-    private OrderModel? order;
-    private string? errorMessage; 
-    private string proposalText = "";
-    private bool isSubmitting = false;
-    private bool showSuccess = false;
+    [Parameter]
+    public int Id { get; set; }
 
-    protected override async Task OnParametersSetAsync()
+    private Order order;
+    private Proposal newProposal = new Proposal();
+    private string errorMessage;
+    private bool isSuccess;
+
+    protected override async Task OnInitializedAsync()
     {
-        if (Id > 0)
-        {
-            await LoadOrderDetails();
-        }
-        else
-        {
-            errorMessage = "Некоректний ID замовлення.";
-        }
+        await LoadOrderDetails();
     }
 
     private async Task LoadOrderDetails()
     {
-        try {
-            errorMessage = null; // Скидаємо помилку перед запитом
-            order = await Http.GetFromJsonAsync<OrderModel>($"https://cursach-production.up.railway.app/api/orders/{Id}");
-        } 
-        catch (Exception ex) { 
-            errorMessage = "Замовлення не знайдено або сервер недоступний.";
-            Console.WriteLine(ex.Message); 
+        try
+        {
+            errorMessage = null;
+            // Запрашиваем данные заказа у API
+            order = await Http.GetFromJsonAsync<Order>($"api/orders/{Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Не удалось загрузить данные заказа: {ex.Message}";
         }
     }
 
-    private async Task SubmitProposal()
+    private async Task SendProposal()
     {
-        if (string.IsNullOrWhiteSpace(proposalText)) return;
-        isSubmitting = true;
-        
-        var newProposal = new {
-            OrderId = this.Id,
-            FreelancerName = $"{UserState.Name} {UserState.LastName}",
-            Text = proposalText,
-            Price = order?.Budget
-        };
-        
-        try {
-            var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/proposals", newProposal);
-            if (response.IsSuccessStatusCode) {
-                showSuccess = true;
-                proposalText = "";
-            }
-        } catch (Exception ex) {
-            Console.WriteLine(ex.Message);
-        }
-        isSubmitting = false;
-    }
+        isSuccess = false;
+        errorMessage = null;
 
-    public class OrderModel {
-        public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public decimal Budget { get; set; }
-        public string Status { get; set; } = "Open";
+        // Связываем модель предложения с текущим заказом и пользователем
+        newProposal.OrderId = Id;
+        newProposal.FreelancerId = UserState.UserId; // ID текущего авторизованного пользователя
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/proposals", newProposal);
+
+            if (response.IsSuccessStatusCode)
+            {
+                isSuccess = true;
+                newProposal = new Proposal(); // Сбрасываем форму
+                await LoadOrderDetails();      // Обновляем список предложений на странице
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Ошибка при сохранении на сервере: {content}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Произошла непредвиденная ошибка: {ex.Message}";
+        }
     }
 }

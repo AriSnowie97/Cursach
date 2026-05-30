@@ -63,10 +63,17 @@ namespace FreelancePlatformApi.Controllers
         }
 
         // GET: api/orders (Отримання ВСІХ замовлень для головної сторінки)
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOrder(int id)
         {
-            return await _context.Orders.ToListAsync();
+            var order = await _context.Orders
+                .Include(o => o.Customer)   // Подгружаем автора заказа
+                .Include(o => o.Proposals)  // Подгружаем предложения
+                    .ThenInclude(p => p.Freelancer) // Подгружаем авторов предложений
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null) return NotFound();
+            return Ok(order);
         }
     }
 }
