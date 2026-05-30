@@ -13,6 +13,8 @@ namespace FreelancePlatform.Client
         public static string Role { get; set; } = "";
         public static bool IsLoggedIn { get; set; } = false;
 
+        public static int UserId { get; set; } 
+
         public static event Action? OnChange;
 
         public static void NotifyStateChanged() => OnChange?.Invoke();
