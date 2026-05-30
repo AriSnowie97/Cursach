@@ -1,7 +1,8 @@
+@using FreelancePlatform.Client
 @page "/order-details/{Id:int}"
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
-@inject UserState UserState // Хранилище состояния авторизованного пользователя
+
 
 <div class="container mt-4">
     @if (order == null)
