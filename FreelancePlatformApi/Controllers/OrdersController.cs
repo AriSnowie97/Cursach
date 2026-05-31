@@ -63,6 +63,16 @@ namespace FreelancePlatformApi.Controllers
         }
 
         // GET: api/orders (Отримання ВСІХ замовлень для головної сторінки)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+        {
+            var orders = await _context.Orders
+                .Include(o => o.Customer)
+                .ToListAsync();
+            return Ok(orders);
+        }
+
+        // GET: api/orders/{id} (Отримання конкретного замовлення)
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrder(int id)
         {

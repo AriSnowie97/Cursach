@@ -41,13 +41,32 @@ namespace FreelancePlatformApi.Controllers
             return Ok(proposals);
         }
 
-        // POST: api/proposals (одразу додаємо метод для створення нових відгуків на майбутнє!)
+        // GET: api/proposals/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Proposal>> GetProposal(int id)
+        {
+            var proposal = await _context.Proposals
+                .Include(p => p.Freelancer)
+                .Include(p => p.Order)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (proposal == null) return NotFound("Пропозицію не знайдено");
+            return Ok(proposal);
+        }
+
+        // POST: api/proposals (Створення нового відгуку)
         [HttpPost]
         public async Task<ActionResult<Proposal>> CreateProposal(Proposal proposal)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             _context.Proposals.Add(proposal);
             await _context.SaveChangesAsync();
-            return Ok(proposal);
+
+            return CreatedAtAction(nameof(GetProposal), new { id = proposal.Id }, proposal);
         }
 
         [HttpGet("order/{orderId}")]
@@ -60,20 +79,6 @@ namespace FreelancePlatformApi.Controllers
                 .ToListAsync();
 
             return Ok(proposals);
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<Proposal>> PostProposal(Proposal proposal)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            _context.Proposals.Add(proposal);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetProposal", new { id = proposal.Id }, proposal);
         }
     }
 }

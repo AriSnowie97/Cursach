@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @inject HttpClient Http
 
 <PageTitle>Всі замовлення — Біржа</PageTitle>
@@ -63,7 +63,7 @@
     {
         try 
         {
-            orders = await Http.GetFromJsonAsync<List<OrderModel>>("https://cursach-production.up.railway.app/api/orders") ?? new();
+            orders = await Http.GetFromJsonAsync<List<OrderModel>>("api/orders") ?? new();
         } 
         catch (Exception ex) 
         { 
@@ -74,7 +74,7 @@
     private async Task ChangeStatus(int orderId, string newStatus)
     {
         // Відправляємо PUT запит
-        var response = await Http.PutAsJsonAsync($"https://cursach-production.up.railway.app/api/orders/{orderId}/status", newStatus);
+        var response = await Http.PutAsJsonAsync($"api/orders/{orderId}/status", newStatus);
         if (response.IsSuccessStatusCode) 
         {
             await LoadOrders(); // Оновлюємо список після зміни

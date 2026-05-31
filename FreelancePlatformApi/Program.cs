@@ -11,6 +11,11 @@ builder.Services.AddCors(options =>
         policy => policy.WithOrigins("https://arisnowie97.github.io")
                         .AllowAnyMethod()
                         .AllowAnyHeader());
+
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
