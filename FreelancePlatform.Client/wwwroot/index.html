@@ -5,7 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cursach-production.up.railway.app http://localhost:5245; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://cursach-production.up.railway.app http://localhost:5245 ws://localhost:* http://localhost:*; img-src 'self' data: https://arisnowie97.github.io; style-src 'self' 'unsafe-inline';">
-    <base href="/Cursach/" />
+    <script>
+        var base = document.createElement('base');
+        base.href = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/' : '/Cursach/';
+        document.write(base.outerHTML);
+    </script>
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" href="favicon.ico" />
