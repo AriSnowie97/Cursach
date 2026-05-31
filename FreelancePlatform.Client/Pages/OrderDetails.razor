@@ -9,12 +9,12 @@
     @if (order == null)
     {
         <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Загрузка данных заказа...</span>
+            <span class="visually-hidden">Завантаження даних замовлення...</span>
         </div>
     }
     else
     {
-        <!-- Карточка заказа -->
+        <!-- Картка замовлення -->
         <div class="card mb-4 shadow-sm">
             <div class="card-header bg-primary text-white">
                 <h3 class="card-title mb-0">@order.Title</h3>
@@ -23,60 +23,60 @@
                 <p class="lead">@order.Description</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Бюджет:</strong> @order.Budget руб.</p>
+                        <p><strong>Бюджет:</strong> @order.Budget грн</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Статус заказа:</strong> <span class="badge bg-info">@order.Status</span></p>
+                        <p><strong>Статус замовлення:</strong> <span class="badge bg-info">@order.Status</span></p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Отображение ошибок или успеха -->
+        <!-- Відображення помилок або успіху -->
         @if (!string.IsNullOrEmpty(errorMessage))
         {
             <div class="alert alert-danger">@errorMessage</div>
         }
         @if (isSuccess)
         {
-            <div class="alert alert-success">Ваш отклик успешно отправлен!</div>
+            <div class="alert alert-success">Ваш відгук успішно надіслано!</div>
         }
 
-        <!-- Форма предложения для Фрилансеров -->
+        <!-- Форма пропозиції для Фрілансерів -->
         @if (UserState.IsLoggedIn && UserState.Role == "Freelancer") 
         {
             <div class="card p-4 mb-4 shadow-sm">
-                <h4>Предложить свои услуги к выполнению</h4>
+                <h4>Запропонувати свої послуги для виконання</h4>
                 <EditForm Model="@newProposal" OnValidSubmit="SendProposal">
                     <DataAnnotationsValidator />
                     <ValidationSummary class="text-danger" />
 
                     <div class="mb-3">
-                        <label class="form-label">Предлагаемая цена (руб.):</label>
+                        <label class="form-label">Пропонована ціна (грн):</label>
                         <InputNumber @bind-Value="newProposal.Price" class="form-control" />
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Сопроводительное письмо / Ваше решение:</label>
-                        <InputTextArea @bind-Value="newProposal.CoverLetter" class="form-control" rows="3" placeholder="Опишите ваш опыт или как вы планируете выполнить задачу..." />
+                        <label class="form-label">Супровідний лист / Ваше рішення:</label>
+                        <InputTextArea @bind-Value="newProposal.CoverLetter" class="form-control" rows="3" placeholder="Опишіть ваш досвід або як ви плануєте виконати завдання..." />
                     </div>
 
-                    <button type="submit" class="btn btn-success">Отправить предложение</button>
+                    <button type="submit" class="btn btn-success">Надіслати пропозицію</button>
                 </EditForm>
             </div>
         }
         else if (!UserState.IsLoggedIn)
         {
             <div class="alert alert-warning">
-                Чтобы взять заказ в работу, пожалуйста, <a href="/login">авторизуйтесь</a>.
+                Щоб взяти замовлення в роботу, будь ласка, <a href="/login">авторизуйтесь</a>.
             </div>
         }
 
-        <!-- Список уже имеющихся предложений к этому заказу -->
-        <h4 class="mt-4">Отклики других фрилансеров:</h4>
+        <!-- Список вже наявних пропозицій до цього замовлення -->
+        <h4 class="mt-4">Відгуки інших фрілансерів:</h4>
         @if (order.Proposals == null || !order.Proposals.Any())
         {
-            <p class="text-muted">К этому заказу еще нет предложений. Будьте первыми!</p>
+            <p class="text-muted">До цього замовлення ще немає пропозицій. Будьте першими!</p>
         }
         else
         {
@@ -87,16 +87,16 @@
                         <div>
                             <p class="mb-1 fw-semibold">@proposal.CoverLetter</p>
                             <small class="text-muted">
-                                Отправитель: @(proposal.Freelancer != null ? $"{proposal.Freelancer.Name} {proposal.Freelancer.LastName}" : $"Фрилансер ID: {proposal.FreelancerId}")
+                                Відправник: @(proposal.Freelancer != null ? $"{proposal.Freelancer.Name} {proposal.Freelancer.LastName}" : $"Фрілансер ID: {proposal.FreelancerId}")
                             </small>
                         </div>
                         <div class="d-flex align-items-center gap-3">
-                            <span class="badge bg-primary fs-6">@proposal.Price руб.</span>
+                            <span class="badge bg-primary fs-6">@proposal.Price грн</span>
                             
                             @if (UserState.IsLoggedIn && UserState.Role == "Customer" && order.CustomerId == UserState.Id && order.Status == "Open")
                             {
                                 <button class="btn btn-sm btn-success rounded-pill px-3" @onclick="() => AcceptProposal(proposal)">
-                                    Возьму этого фрилансера
+                                    Оберу цього фрілансера
                                 </button>
                             }
                         </div>
@@ -126,12 +126,12 @@
         try
         {
             errorMessage = null;
-            // Запрашиваем данные заказа у API
+            // Запитуємо дані замовлення в API
             order = await Http.GetFromJsonAsync<Order>($"api/orders/{Id}");
         }
         catch (Exception ex)
         {
-            errorMessage = $"Не удалось загрузить данные заказа: {ex.Message}";
+            errorMessage = $"Не вдалося завантажити дані замовлення: {ex.Message}";
         }
     }
 
@@ -140,9 +140,9 @@
         isSuccess = false;
         errorMessage = null;
 
-        // Связываем модель предложения с текущим заказом и пользователем
+        // Пов'язуємо модель пропозиції з поточним замовленням та користувачем
         newProposal.OrderId = Id;
-        newProposal.FreelancerId = UserState.UserId; // ID текущего авторизованного пользователя
+        newProposal.FreelancerId = UserState.UserId; // ID поточного авторизованого користувача
 
         try
         {
@@ -151,18 +151,18 @@
             if (response.IsSuccessStatusCode)
             {
                 isSuccess = true;
-                newProposal = new Proposal(); // Сбрасываем форму
-                await LoadOrderDetails();      // Обновляем список предложений на странице
+                newProposal = new Proposal(); // Скидаємо форму
+                await LoadOrderDetails();      // Оновлюємо список пропозицій на сторінці
             }
             else
             {
                 var content = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Ошибка при сохранении на сервере: {content}";
+                errorMessage = $"Помилка при збереженні на сервері: {content}";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Произошла непредвиденная ошибка: {ex.Message}";
+            errorMessage = $"Сталася непередбачена помилка: {ex.Message}";
         }
     }
 
@@ -173,22 +173,22 @@
 
         try
         {
-            // Обновляем статус заказа на "InProgress"
+            // Оновлюємо статус замовлення на "InProgress"
             var response = await Http.PutAsJsonAsync($"api/orders/{Id}/status", "InProgress");
 
             if (response.IsSuccessStatusCode)
             {
-                await LoadOrderDetails();      // Обновляем детали заказа
+                await LoadOrderDetails();      // Оновлюємо деталі замовлення
             }
             else
             {
                 var content = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Не удалось обновить статус заказа: {content}";
+                errorMessage = $"Не вдалося оновити статус замовлення: {content}";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Произошла непредвиденная ошибка: {ex.Message}";
+            errorMessage = $"Сталася непередбачена помилка: {ex.Message}";
         }
     }
 

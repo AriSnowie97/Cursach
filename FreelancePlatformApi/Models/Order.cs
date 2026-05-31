@@ -9,11 +9,11 @@ namespace FreelancePlatformApi.Models
         public DateTime Deadline { get; set; }
         public string Status { get; set; } = "Open"; // Open, InProgress, Completed
 
-        // Кто создал заказ (Заказчик)
+        // Хто створив замовлення (Замовник)
         public int CustomerId { get; set; }
         public User? Customer { get; set; }
 
-        // Отклики на этот заказ
+        // Пропозиції на це замовлення
         public ICollection<Proposal> Proposals { get; set; } = new List<Proposal>();
     }
 }

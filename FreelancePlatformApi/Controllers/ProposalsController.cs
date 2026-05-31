@@ -72,7 +72,7 @@ namespace FreelancePlatformApi.Controllers
         [HttpGet("order/{orderId}")]
         public async Task<ActionResult<IEnumerable<Proposal>>> GetOrderProposals(int orderId)
         {
-            // Получаем предложения конкретного заказа + информацию о фрилансере
+            // Отримуємо пропозиції конкретного замовлення + інформацію про фрілансера
             var proposals = await _context.Proposals
                 .Include(p => p.Freelancer) 
                 .Where(p => p.OrderId == orderId)
