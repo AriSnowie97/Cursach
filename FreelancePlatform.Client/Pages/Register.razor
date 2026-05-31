@@ -55,8 +55,8 @@
 
         try
         {
-            // Відправляємо дані на бекенд Railway
-            var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/auth/register", registerModel);
+            // Відправляємо дані на бекенд
+            var response = await Http.PostAsJsonAsync("api/auth/register", registerModel);
 
             if (response.IsSuccessStatusCode)
             {

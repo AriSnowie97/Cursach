@@ -41,29 +41,22 @@ namespace FreelancePlatformApi.Controllers
             return Ok(proposals);
         }
 
-        // POST: api/proposals (одразу додаємо метод для створення нових відгуків на майбутнє!)
-        [HttpPost]
-        public async Task<ActionResult<Proposal>> CreateProposal(Proposal proposal)
+        // GET: api/proposals/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Proposal>> GetProposal(int id)
         {
-            _context.Proposals.Add(proposal);
-            await _context.SaveChangesAsync();
+            var proposal = await _context.Proposals
+                .Include(p => p.Freelancer)
+                .Include(p => p.Order)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (proposal == null) return NotFound("Пропозицію не знайдено");
             return Ok(proposal);
         }
 
-        [HttpGet("order/{orderId}")]
-        public async Task<ActionResult<IEnumerable<Proposal>>> GetOrderProposals(int orderId)
-        {
-            // Получаем предложения конкретного заказа + информацию о фрилансере
-            var proposals = await _context.Proposals
-                .Include(p => p.Freelancer) 
-                .Where(p => p.OrderId == orderId)
-                .ToListAsync();
-
-            return Ok(proposals);
-        }
-
+        // POST: api/proposals (Створення нового відгуку)
         [HttpPost]
-        public async Task<ActionResult<Proposal>> PostProposal(Proposal proposal)
+        public async Task<ActionResult<Proposal>> CreateProposal(Proposal proposal)
         {
             if (!ModelState.IsValid)
             {
@@ -73,7 +66,19 @@ namespace FreelancePlatformApi.Controllers
             _context.Proposals.Add(proposal);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProposal", new { id = proposal.Id }, proposal);
+            return CreatedAtAction(nameof(GetProposal), new { id = proposal.Id }, proposal);
+        }
+
+        [HttpGet("order/{orderId}")]
+        public async Task<ActionResult<IEnumerable<Proposal>>> GetOrderProposals(int orderId)
+        {
+            // Отримуємо пропозиції конкретного замовлення + інформацію про фрілансера
+            var proposals = await _context.Proposals
+                .Include(p => p.Freelancer) 
+                .Where(p => p.OrderId == orderId)
+                .ToListAsync();
+
+            return Ok(proposals);
         }
     }
 }

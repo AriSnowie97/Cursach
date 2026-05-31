@@ -52,10 +52,10 @@ namespace FreelancePlatformApi.Controllers
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] string newStatus)
         {
             var order = await _context.Orders.FindAsync(id);
-            if (order == null) return NotFound("Заказ не найден");
+            if (order == null) return NotFound("Замовлення не знайдено");
 
-            // Можно добавить проверки, например: только заказчик может отменить, 
-            // или только фрилансер может перевести в InProgress
+            // Можна додати перевірки, наприклад: тільки замовник може скасувати, 
+            // або тільки фрілансер може перевести в InProgress
             order.Status = newStatus;
             
             await _context.SaveChangesAsync();
@@ -63,13 +63,23 @@ namespace FreelancePlatformApi.Controllers
         }
 
         // GET: api/orders (Отримання ВСІХ замовлень для головної сторінки)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+        {
+            var orders = await _context.Orders
+                .Include(o => o.Customer)
+                .ToListAsync();
+            return Ok(orders);
+        }
+
+        // GET: api/orders/{id} (Отримання конкретного замовлення)
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrder(int id)
         {
             var order = await _context.Orders
-                .Include(o => o.Customer)   // Подгружаем автора заказа
-                .Include(o => o.Proposals)  // Подгружаем предложения
-                    .ThenInclude(p => p.Freelancer) // Подгружаем авторов предложений
+                .Include(o => o.Customer)   // Підвантажуємо автора замовлення
+                .Include(o => o.Proposals)  // Підвантажуємо пропозиції
+                    .ThenInclude(p => p.Freelancer) // Підвантажуємо авторів пропозицій
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null) return NotFound();

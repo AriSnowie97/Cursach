@@ -1,61 +1,64 @@
 @HostAddress = http://localhost:5245
 
-### 1. Добавить нового пользователя (Заказчика)
-POST {{HostAddress}}/api/users
+### 1. Додати нового користувача (Замовника)
+POST {{HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "name": "Arina",
+  "name": "Аріна",
+  "lastName": "Замовниця",
   "email": "arina@test.com",
-  "passwordHash": "my_secret_password",
+  "password": "my_secret_password",
   "role": "Customer"
 }
 
-### 
-
-### 2. Получить список всех пользователей
-GET {{HostAddress}}/api/users
-Accept: application/json
 ###
 
-### 3. Создать новый заказ (от лица пользователя id: 1)
+### 2. Отримати список всіх замовлень
+GET {{HostAddress}}/api/orders
+Accept: application/json
+
+###
+
+### 3. Створити новий заказ (від імені користувача id: 1)
 POST {{HostAddress}}/api/orders
 Content-Type: application/json
 
 {
-  "title": "Разработать дизайн лендинга",
-  "description": "Нужен современный дизайн для магазина в Figma",
+  "title": "Розробити дизайн лендингу",
+  "description": "Потрібен сучасний дизайн для магазину у Figma",
   "budget": 500.00,
   "deadline": "2026-04-15T00:00:00Z",
   "status": "Open",
   "customerId": 1
 }
 
-### 4. Получить список всех заказов
+### 4. Отримати список всіх замовлень
 GET {{HostAddress}}/api/orders
 Accept: application/json
 
 ###
 
-### 5. Создать Фрилансера (получит id: 2)
-POST {{HostAddress}}/api/users
+### 5. Зареєструвати Фрілансера (отримає новий ID)
+POST {{HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-  "name": "Максим Фрилансер",
+  "name": "Максим",
+  "lastName": "Фрілансер",
   "email": "max@freelance.com",
-  "passwordHash": "secure_pass",
+  "password": "secure_pass",
   "role": "Freelancer"
 }
 
 ### 
 
-### 6. Оставить отклик на заказ (Фрилансер id:2 откликается на Заказ id:1)
+### 6. Залишити відгук на замовлення
 POST {{HostAddress}}/api/proposals
 Content-Type: application/json
 
 {
-  "coverLetter": "Привет! Я эксперт в веб-дизайне, сделаю всё быстро и красиво.",
+  "coverLetter": "Привіт! Я експерт у веб-дизайні, зроблю все швидко та красиво.",
   "price": 450.00,
   "deliveryDays": 5,
   "orderId": 1,

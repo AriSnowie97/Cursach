@@ -7,11 +7,11 @@ namespace FreelancePlatformApi.Models
         public decimal Price { get; set; }
         public int DeliveryDays { get; set; }
 
-        // К какому заказу относится
+        // До якого замовлення відноситься
         public int OrderId { get; set; }
         public Order? Order { get; set; }
 
-        // Кто оставил отклик (Фрилансер)
+        // Хто залишив відгук (Фрілансер)
         public int FreelancerId { get; set; }
         public User? Freelancer { get; set; }
     }

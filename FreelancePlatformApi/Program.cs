@@ -11,16 +11,24 @@ builder.Services.AddCors(options =>
         policy => policy.WithOrigins("https://arisnowie97.github.io")
                         .AllowAnyMethod()
                         .AllowAnyHeader());
+
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options => 
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
 
 var app = builder.Build();
 
-app.UseCors("AllowGitHubPages");
+app.UseCors("AllowAll");
 
 // --- ДОБАВЛЯЕМ АВТО-ОБНОВЛЕНИЕ БАЗЫ ДАННЫХ ---
 using (var scope = app.Services.CreateScope())
@@ -30,11 +38,11 @@ using (var scope = app.Services.CreateScope())
 }
 // ----------------------------------------------
 
-app.UseCors("AllowAll"); // Твои настройки CORS
-
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthorization();
-app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 app.MapControllers();
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5245";

@@ -81,8 +81,8 @@
 
         try
         {
-            // Відправляємо POST запит на твій бекенд Railway
-            var response = await Http.PostAsJsonAsync("https://cursach-production.up.railway.app/api/orders", newOrder);
+            // Відправляємо POST запит на бекенд
+            var response = await Http.PostAsJsonAsync("api/orders", newOrder);
 
             if (response.IsSuccessStatusCode)
             {
