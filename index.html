@@ -19,6 +19,19 @@
         base.href = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/' : '/Cursach/';
         document.write(base.outerHTML);
     </script>
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var path = params.get('path');
+            if (path) {
+                var basePath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/' : '/Cursach/';
+                if (path.startsWith('/')) {
+                    path = path.substring(1);
+                }
+                window.history.replaceState(null, null, basePath + path);
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" href="favicon.ico" />
