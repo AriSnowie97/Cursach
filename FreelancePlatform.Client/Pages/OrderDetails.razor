@@ -29,9 +29,18 @@
                         <p><strong>Статус замовлення:</strong> <span class="badge bg-info">@order.Status</span></p>
                     </div>
                 </div>
+
+                @if (UserState.IsLoggedIn && UserState.Role == "Customer" && order.CustomerId == UserState.Id && order.Status == "InProgress")
+                {
+                    <div class="mt-3 border-top pt-3">
+                        <button class="btn btn-success" @onclick="CompleteOrder">
+                            ✅ Позначити як виконане (Завершити замовлення)
+                        </button>
+                    </div>
+                }
             </div>
         </div>
-
+ 
         <!-- Відображення помилок або успіху -->
         @if (!string.IsNullOrEmpty(errorMessage))
         {
@@ -40,6 +49,10 @@
         @if (isSuccess)
         {
             <div class="alert alert-success">Ваш відгук успішно надіслано!</div>
+        }
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success">@successMessage</div>
         }
 
         <!-- Форма пропозиції для Фрілансерів -->
@@ -114,6 +127,7 @@
     private Order order;
     private Proposal newProposal = new Proposal();
     private string errorMessage;
+    private string successMessage;
     private bool isSuccess;
 
     protected override async Task OnInitializedAsync()
@@ -126,6 +140,7 @@
         try
         {
             errorMessage = null;
+            successMessage = null;
             // Запитуємо дані замовлення в API
             order = await Http.GetFromJsonAsync<Order>($"api/orders/{Id}");
         }
@@ -139,6 +154,7 @@
     {
         isSuccess = false;
         errorMessage = null;
+        successMessage = null;
 
         // Пов'язуємо модель пропозиції з поточним замовленням та користувачем
         newProposal.OrderId = Id;
@@ -170,6 +186,7 @@
     {
         isSuccess = false;
         errorMessage = null;
+        successMessage = null;
 
         try
         {
@@ -191,7 +208,34 @@
             errorMessage = $"Сталася непередбачена помилка: {ex.Message}";
         }
     }
-
+ 
+    private async Task CompleteOrder()
+    {
+        errorMessage = null;
+        successMessage = null;
+ 
+        try
+        {
+            // Оновлюємо статус замовлення на "Completed"
+            var response = await Http.PutAsJsonAsync($"api/orders/{Id}/status", "Completed");
+ 
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = "Замовлення успішно виконано та завершено!";
+                await LoadOrderDetails();      // Оновлюємо деталі замовлення
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Не вдалося оновити статус замовлення: {content}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Сталася непередбачена помилка: {ex.Message}";
+        }
+    }
+ 
     public class Order
     {
         public int Id { get; set; }
