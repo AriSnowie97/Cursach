@@ -79,16 +79,30 @@ namespace FreelancePlatformApi.Hubs
             _context.ChatMessages.Add(message);
             await _context.SaveChangesAsync();
 
+            // Create a clean DTO to avoid EF navigation property circular reference issues
+            // SignalR uses its own JSON serializer (separate from controllers), so IgnoreCycles
+            // configured in AddControllers() does NOT apply here — we must send plain data.
+            var messageDto = new
+            {
+                message.Id,
+                message.OrderId,
+                message.SenderId,
+                message.ReceiverId,
+                message.MessageText,
+                message.SentAt,
+                message.IsRead
+            };
+
             // 4. Send message to receiver if online
             if (OnlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
             {
-                await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", message);
+                await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", messageDto);
             }
 
             // 5. Send message back to sender (confirming delivery/saving)
             if (OnlineUsers.TryGetValue(senderId, out var senderConnectionId))
             {
-                await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", message);
+                await Clients.Client(senderConnectionId).SendAsync("ReceiveMessage", messageDto);
             }
         }
 

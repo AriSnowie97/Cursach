@@ -107,6 +107,25 @@ namespace FreelancePlatformApi.Controllers
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null) return NotFound();
+
+            // АВТО-ВИПРАВЛЕННЯ ДЛЯ СТАРИХ ЗАМОВЛЕНЬ:
+            // Якщо статус InProgress, але виконавець не був збережений в БД (через стару версію коду),
+            // ми автоматично призначаємо фрілансера, який залишив пропозицію.
+            if (order.Status == "InProgress" && order.FreelancerId == null && order.Proposals.Any())
+            {
+                var firstProposal = order.Proposals.First();
+                order.FreelancerId = firstProposal.FreelancerId;
+                await _context.SaveChangesAsync();
+                
+                // Перезавантажуємо замовлення з оновленою властивістю Freelancer
+                order = await _context.Orders
+                    .Include(o => o.Customer)
+                    .Include(o => o.Freelancer)
+                    .Include(o => o.Proposals)
+                        .ThenInclude(p => p.Freelancer)
+                    .FirstOrDefaultAsync(o => o.Id == id);
+            }
+
             return Ok(order);
         }
     }
