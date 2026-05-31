@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "FreelancePlatform.Client",
   "resources": {
-    "hash": "sha256-yErx4pBBAfYq+03UaJQzEVpobO4lZmUL8SY2BYSZSAo=",
+    "hash": "sha256-M4e5FGXSQSpvAPlc+HaUw6QoGMIld1HA5beUAF+VwzA=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Components.o0qjifevdb.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Forms.z9idttgdhw.wasm": "Microsoft.AspNetCore.Components.Forms.wasm",
@@ -47,7 +47,7 @@
       "System.Threading.ck7ypa45et.wasm": "System.Threading.wasm",
       "System.t250xnkyfs.wasm": "System.wasm",
       "System.Private.CoreLib.124yph2gqk.wasm": "System.Private.CoreLib.wasm",
-      "FreelancePlatform.Client.5grwqq6adg.wasm": "FreelancePlatform.Client.wasm",
+      "FreelancePlatform.Client.5jvnd8gwpo.wasm": "FreelancePlatform.Client.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.native.xsn1d6x2kd.js": "dotnet.native.js",
       "dotnet.native.vz0adxojrz.wasm": "dotnet.native.wasm",
@@ -117,7 +117,7 @@
       "System.Text.RegularExpressions.ryu3vnzf3i.wasm": "sha256-fRX+xkA6H7GEzZcbvvyBQCk/EvQnc/qT8RqMJ0F/E9A=",
       "System.Threading.ck7ypa45et.wasm": "sha256-NAT337jZ8vKKqEaIIZX7h6Ebx8VSc6hIlBPK0fPmL28=",
       "System.t250xnkyfs.wasm": "sha256-tVaTeiubnxofQV5rO7ga2UOORIQEtLkQr36ewcMO+tw=",
-      "FreelancePlatform.Client.5grwqq6adg.wasm": "sha256-9TTMWpU5GC0wH9MOQJ/GpmhEmm+7Ch3dz/5VWO/emCA="
+      "FreelancePlatform.Client.5jvnd8gwpo.wasm": "sha256-YUxV7PRzVw5xTZCPdSm8TaQ1bsbWIrV+sLs+llsVJpI="
     }
   },
   "cacheBootResources": true,
