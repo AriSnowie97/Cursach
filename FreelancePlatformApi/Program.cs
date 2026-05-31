@@ -28,7 +28,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
 var app = builder.Build();
 
-app.UseCors("AllowGitHubPages");
+app.UseCors("AllowAll");
 
 // --- ДОБАВЛЯЕМ АВТО-ОБНОВЛЕНИЕ БАЗЫ ДАННЫХ ---
 using (var scope = app.Services.CreateScope())
@@ -38,11 +38,11 @@ using (var scope = app.Services.CreateScope())
 }
 // ----------------------------------------------
 
-app.UseCors("AllowAll"); // Твои настройки CORS
-
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthorization();
-app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 app.MapControllers();
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5245";

@@ -4,7 +4,16 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cursach-production.up.railway.app http://localhost:5245; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://cursach-production.up.railway.app http://localhost:5245 ws://localhost:* http://localhost:*; img-src 'self' data: https://arisnowie97.github.io; style-src 'self' 'unsafe-inline';">
+    <script>
+        window.__errors = [];
+        window.onerror = function(message, source, lineno, colno, error) {
+            window.__errors.push(message + " at " + source + ":" + lineno + ":" + colno);
+        };
+        window.addEventListener('unhandledrejection', function(event) {
+            window.__errors.push("Unhandled rejection: " + (event.reason ? (event.reason.stack || event.reason.message || event.reason) : event));
+        });
+    </script>
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cursach-production.up.railway.app http://localhost:5245; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://cursach-production.up.railway.app http://localhost:5245 ws://localhost:* http://localhost:*; img-src 'self' data: https://arisnowie97.github.io; style-src 'self' 'unsafe-inline';"> -->
     <script>
         var base = document.createElement('base');
         base.href = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/' : '/Cursach/';
