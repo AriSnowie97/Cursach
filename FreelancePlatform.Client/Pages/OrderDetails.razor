@@ -82,12 +82,23 @@
             <div class="list-group">
                 @foreach (var proposal in order.Proposals)
                 {
-                    <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center mb-2 shadow-xs">
+                    <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center mb-2 shadow-sm" style="border-radius: 8px;">
                         <div>
-                            <p class="mb-1">@proposal.CoverLetter</p>
-                            <small class="text-muted">Отправитель ID: @proposal.FreelancerId</small>
+                            <p class="mb-1 fw-semibold">@proposal.CoverLetter</p>
+                            <small class="text-muted">
+                                Отправитель: @(proposal.Freelancer != null ? $"{proposal.Freelancer.Name} {proposal.Freelancer.LastName}" : $"Фрилансер ID: {proposal.FreelancerId}")
+                            </small>
                         </div>
-                        <span class="badge bg-primary rounded-pill">@proposal.Price руб.</span>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="badge bg-primary fs-6">@proposal.Price руб.</span>
+                            
+                            @if (UserState.IsLoggedIn && UserState.Role == "Customer" && order.CustomerId == UserState.Id && order.Status == "Open")
+                            {
+                                <button class="btn btn-sm btn-success rounded-pill px-3" @onclick="() => AcceptProposal(proposal)">
+                                    Возьму этого фрилансера
+                                </button>
+                            }
+                        </div>
                     </div>
                 }
             </div>
@@ -154,22 +165,56 @@
         }
     }
 
+    private async Task AcceptProposal(Proposal proposal)
+    {
+        isSuccess = false;
+        errorMessage = null;
+
+        try
+        {
+            // Обновляем статус заказа на "InProgress"
+            var response = await Http.PutAsJsonAsync($"api/orders/{Id}/status", "InProgress");
+
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadOrderDetails();      // Обновляем детали заказа
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Не удалось обновить статус заказа: {content}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Произошла непредвиденная ошибка: {ex.Message}";
+        }
+    }
+
     public class Order
     {
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
         public decimal Budget { get; set; }
-        public string Status { get; set; }
+        public string Status { get; set; } = "";
+        public int CustomerId { get; set; }
         public List<Proposal> Proposals { get; set; } = new();
     }
 
     public class Proposal
     {
         public int Id { get; set; }
-        public string CoverLetter { get; set; }
+        public string CoverLetter { get; set; } = "";
         public decimal Price { get; set; }
         public int OrderId { get; set; }
         public int FreelancerId { get; set; }
+        public FreelancerModel? Freelancer { get; set; }
+    }
+
+    public class FreelancerModel
+    {
+        public string Name { get; set; } = "";
+        public string LastName { get; set; } = "";
     }
 }
