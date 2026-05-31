@@ -48,6 +48,28 @@ namespace FreelancePlatformApi.Controllers
             return Ok(order);
         }
 
+        // PUT: api/orders/{id}/accept-proposal/{proposalId}
+        [HttpPut("{id}/accept-proposal/{proposalId}")]
+        public async Task<IActionResult> AcceptProposal(int id, int proposalId)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Proposals)
+                .FirstOrDefaultAsync(o => o.Id == id);
+            
+            if (order == null) return NotFound("Замовлення не знайдено");
+
+            var proposal = await _context.Proposals.FindAsync(proposalId);
+            if (proposal == null) return NotFound("Пропозицію не знайдено");
+
+            if (proposal.OrderId != id) return BadRequest("Ця пропозиція не відноситься до даного замовлення");
+
+            order.FreelancerId = proposal.FreelancerId;
+            order.Status = "InProgress";
+
+            await _context.SaveChangesAsync();
+            return Ok(order);
+        }
+
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] string newStatus)
         {
@@ -68,6 +90,7 @@ namespace FreelancePlatformApi.Controllers
         {
             var orders = await _context.Orders
                 .Include(o => o.Customer)
+                .Include(o => o.Freelancer)
                 .ToListAsync();
             return Ok(orders);
         }
@@ -78,6 +101,7 @@ namespace FreelancePlatformApi.Controllers
         {
             var order = await _context.Orders
                 .Include(o => o.Customer)   // Підвантажуємо автора замовлення
+                .Include(o => o.Freelancer) // Підвантажуємо виконавця
                 .Include(o => o.Proposals)  // Підвантажуємо пропозиції
                     .ThenInclude(p => p.Freelancer) // Підвантажуємо авторів пропозицій
                 .FirstOrDefaultAsync(o => o.Id == id);

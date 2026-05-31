@@ -11,6 +11,7 @@ namespace FreelancePlatformApi.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Proposal> Proposals { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -19,6 +20,11 @@ namespace FreelancePlatformApi.Data
                 .HasOne(o => o.Customer)
                 .WithMany(u => u.Orders)
                 .HasForeignKey(o => o.CustomerId);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Freelancer)
+                .WithMany()
+                .HasForeignKey(o => o.FreelancerId);
 
             modelBuilder.Entity<Proposal>()
                 .HasOne(p => p.Freelancer)
@@ -29,6 +35,21 @@ namespace FreelancePlatformApi.Data
                 .HasOne(p => p.Order)
                 .WithMany(o => o.Proposals)
                 .HasForeignKey(p => p.OrderId);
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(m => m.Order)
+                .WithMany()
+                .HasForeignKey(m => m.OrderId);
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(m => m.Sender)
+                .WithMany()
+                .HasForeignKey(m => m.SenderId);
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(m => m.Receiver)
+                .WithMany()
+                .HasForeignKey(m => m.ReceiverId);
         }
     }
 }

@@ -1,4 +1,5 @@
 using FreelancePlatformApi.Data;
+using FreelancePlatformApi.Hubs;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,16 +11,20 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowGitHubPages",
         policy => policy.WithOrigins("https://arisnowie97.github.io")
                         .AllowAnyMethod()
-                        .AllowAnyHeader());
+                        .AllowAnyHeader()
+                        .AllowCredentials());
 
     options.AddPolicy("AllowAll",
-        policy => policy.AllowAnyOrigin()
+        policy => policy.SetIsOriginAllowed(origin => true)
                         .AllowAnyMethod()
-                        .AllowAnyHeader());
+                        .AllowAnyHeader()
+                        .AllowCredentials());
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddSignalR();
 
 builder.Services.AddControllers().AddJsonOptions(options => 
 {
@@ -44,6 +49,7 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ChatHub>("/chathub");
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5245";
 app.Run($"http://0.0.0.0:{port}");
