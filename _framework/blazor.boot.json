@@ -1,9 +1,9 @@
 {
   "mainAssemblyName": "FreelancePlatform.Client",
   "resources": {
-    "hash": "sha256-hzt72fdMXzmHXpOG2OyJQ/UQfBuZBPi6QDaKHqanhVI=",
+    "hash": "sha256-6YoMrERsCT93bDeMEwR4Qae5aS3Y7wOpX1Ay627BIyA=",
     "fingerprinting": {
-      "Microsoft.AspNetCore.Components.o0qjifevdb.wasm": "Microsoft.AspNetCore.Components.wasm",
+      "Microsoft.AspNetCore.Components.bu9l3prmg2.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Forms.z9idttgdhw.wasm": "Microsoft.AspNetCore.Components.Forms.wasm",
       "Microsoft.AspNetCore.Components.Web.tjf0jayx60.wasm": "Microsoft.AspNetCore.Components.Web.wasm",
       "Microsoft.AspNetCore.Components.WebAssembly.cjaqw44tps.wasm": "Microsoft.AspNetCore.Components.WebAssembly.wasm",
@@ -53,7 +53,7 @@
       "System.Private.Uri.iu5i38xjuc.wasm": "System.Private.Uri.wasm",
       "System.Runtime.InteropServices.JavaScript.qgujet1bxj.wasm": "System.Runtime.InteropServices.JavaScript.wasm",
       "System.Runtime.Serialization.Primitives.5zufw8ttrp.wasm": "System.Runtime.Serialization.Primitives.wasm",
-      "System.Runtime.bq3syicnou.wasm": "System.Runtime.wasm",
+      "System.Runtime.l5hs5o86d1.wasm": "System.Runtime.wasm",
       "System.Security.Cryptography.m9eth2kcgf.wasm": "System.Security.Cryptography.wasm",
       "System.Text.Encodings.Web.ft7b1531ss.wasm": "System.Text.Encodings.Web.wasm",
       "System.Text.Json.8jfwno0s2g.wasm": "System.Text.Json.wasm",
@@ -62,7 +62,7 @@
       "System.Threading.ck7ypa45et.wasm": "System.Threading.wasm",
       "System.t250xnkyfs.wasm": "System.wasm",
       "System.Private.CoreLib.clysn7er9e.wasm": "System.Private.CoreLib.wasm",
-      "FreelancePlatform.Client.b96mdhak02.wasm": "FreelancePlatform.Client.wasm",
+      "FreelancePlatform.Client.bay6w9iy7f.wasm": "FreelancePlatform.Client.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.native.xsn1d6x2kd.js": "dotnet.native.js",
       "dotnet.native.vz0adxojrz.wasm": "dotnet.native.wasm",
@@ -90,7 +90,7 @@
       "System.Private.CoreLib.clysn7er9e.wasm": "sha256-IDExsGzEdHtvoT1hv2q8twdM+vM8uIsiX5cImJgveaw="
     },
     "assembly": {
-      "Microsoft.AspNetCore.Components.o0qjifevdb.wasm": "sha256-iGffR1vrgNyrVen5BVUuhyr+MrwyL5Kly3hFQXTifXk=",
+      "Microsoft.AspNetCore.Components.bu9l3prmg2.wasm": "sha256-Ezzepr3/KvscCpnR3OjCVWf3BIwRXdRnQuWek4pgG1g=",
       "Microsoft.AspNetCore.Components.Forms.z9idttgdhw.wasm": "sha256-x66wr3kKgFMQWEDEJoE3u1YN7unJzAjmAnVedjIvDYY=",
       "Microsoft.AspNetCore.Components.Web.tjf0jayx60.wasm": "sha256-R/bBaPxFKf23fgnJffz+wKVVj6sYKIMWw8wmznnrjRI=",
       "Microsoft.AspNetCore.Components.WebAssembly.cjaqw44tps.wasm": "sha256-2Ocz0vzKQmwaq9ypobRe1I708X2NPXZMUfzwZ4YJ3dg=",
@@ -139,7 +139,7 @@
       "System.ObjectModel.rmpdszjsa5.wasm": "sha256-A/uWDuvFOjkQno2rSttHQg1FV2ZqEJ80UbUy1ZBMjVU=",
       "System.Private.Uri.iu5i38xjuc.wasm": "sha256-5j5DvxEwD9eS8vxssIPemyiqtYF+RFY1fhiv/xkc6es=",
       "System.Runtime.Serialization.Primitives.5zufw8ttrp.wasm": "sha256-b2U6AS08VC2UAjTuZKRWXWAPS0RiFiGdBwa1mAVTUNs=",
-      "System.Runtime.bq3syicnou.wasm": "sha256-HZS450xoVfGeBK280D4y+TF5GuXavoAURQMy0Fn1g3Q=",
+      "System.Runtime.l5hs5o86d1.wasm": "sha256-JzVtMiHc6/vKO8ShDmt5Nt8rPw3oAC49AOOGU73toOM=",
       "System.Security.Cryptography.m9eth2kcgf.wasm": "sha256-eiaCmYA8bedTsEy3iNPcikPQUXZShLC/bA+Tw0JWCw8=",
       "System.Text.Encodings.Web.ft7b1531ss.wasm": "sha256-rb7Ryw7AUnb+SCcx5czXUDLi17e/gs1oyvSYZBtw+Ao=",
       "System.Text.Json.8jfwno0s2g.wasm": "sha256-XBL7aULMp5KN3ZVtGDH/J7IeRFYcYefylDAbREiRfTc=",
@@ -147,7 +147,7 @@
       "System.Threading.Channels.zscynwcchw.wasm": "sha256-rdNE9oa3+MatWYqFbkzDI+d4GR2qg096l9H2CSIYZWs=",
       "System.Threading.ck7ypa45et.wasm": "sha256-NAT337jZ8vKKqEaIIZX7h6Ebx8VSc6hIlBPK0fPmL28=",
       "System.t250xnkyfs.wasm": "sha256-tVaTeiubnxofQV5rO7ga2UOORIQEtLkQr36ewcMO+tw=",
-      "FreelancePlatform.Client.b96mdhak02.wasm": "sha256-L3qNSIk2NzxYhXNwDB1kntlY3Tuoi9cjADV5UTLtzVY="
+      "FreelancePlatform.Client.bay6w9iy7f.wasm": "sha256-E3cv6KIWLiQqKChCyT8bwp/b8fFvtDXIrooF7d66lgU="
     }
   },
   "cacheBootResources": true,

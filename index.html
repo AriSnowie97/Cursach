@@ -82,5 +82,23 @@
             document.cookie = name + "=; Max-Age=-99999999; path=/;";
         }
     };
+    window.readFileAsBase64 = function(inputId) {
+        return new Promise(function(resolve, reject) {
+            var input = document.getElementById(inputId);
+            if (!input || !input.files || !input.files[0]) {
+                resolve(null);
+                return;
+            }
+            var file = input.files[0];
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                resolve(e.target.result); // data:image/xxx;base64,...
+            };
+            reader.onerror = function() {
+                reject('Не вдалося прочитати файл');
+            };
+            reader.readAsDataURL(file);
+        });
+    };
 </script>
 </html>
