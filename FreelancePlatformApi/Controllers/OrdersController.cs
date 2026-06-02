@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FreelancePlatformApi.Data;
 using FreelancePlatformApi.Models;
+using FreelancePlatformApi.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace FreelancePlatformApi.Controllers
 {
@@ -10,10 +12,12 @@ namespace FreelancePlatformApi.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public OrdersController(AppDbContext context)
+        public OrdersController(AppDbContext context, IHubContext<ChatHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // POST: api/orders (Створення нового замовлення)
@@ -44,6 +48,9 @@ namespace FreelancePlatformApi.Controllers
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
+
+            // Сповіщаємо всіх фрілансерів про нове замовлення через SignalR
+            await ChatHub.NotifyFreelancersAboutNewOrder(_hubContext, order.Id, order.Title);
 
             return Ok(order);
         }
@@ -84,14 +91,31 @@ namespace FreelancePlatformApi.Controllers
             return Ok(order);
         }
 
-        // GET: api/orders (Отримання ВСІХ замовлень для головної сторінки)
+        // GET: api/orders?role=Customer&userId=1 (Отримання замовлень з фільтром по ролі)
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrders([FromQuery] string? role, [FromQuery] int? userId)
         {
-            var orders = await _context.Orders
+            IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
-                .Include(o => o.Freelancer)
-                .ToListAsync();
+                .Include(o => o.Freelancer);
+
+            if (role == "Customer" && userId.HasValue)
+            {
+                // Замовник бачить свої Open + InProgress замовлення
+                query = query.Where(o => o.CustomerId == userId.Value && o.Status != "Completed");
+            }
+            else if (role == "Freelancer")
+            {
+                // Фрілансер бачить лише Open замовлення (де можна подати пропозицію)
+                query = query.Where(o => o.Status == "Open");
+            }
+            else
+            {
+                // Гість або невизначена роль — бачить лише Open (не Completed, не InProgress)
+                query = query.Where(o => o.Status == "Open");
+            }
+
+            var orders = await query.ToListAsync();
             return Ok(orders);
         }
 

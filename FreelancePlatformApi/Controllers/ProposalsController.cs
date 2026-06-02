@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using FreelancePlatformApi.Data;
 using Microsoft.EntityFrameworkCore;
-using FreelancePlatformApi.Models; // Зверни увагу, щоб простір імен збігався з твоїм
+using FreelancePlatformApi.Models;
+using FreelancePlatformApi.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -13,10 +15,12 @@ namespace FreelancePlatformApi.Controllers
     public class ProposalsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public ProposalsController(AppDbContext context)
+        public ProposalsController(AppDbContext context, IHubContext<ChatHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // GET: api/proposals/user/{name}
@@ -32,8 +36,6 @@ namespace FreelancePlatformApi.Controllers
             }
 
             // 2. Дістаємо всі пропозиції цього фрілансера
-            // УВАГА: Якщо в твоїй моделі Proposal поле називається FreelancerId замість UserId,
-            // просто заміни p.UserId на p.FreelancerId у рядку нижче!
             var proposals = await _context.Proposals
                 .Where(p => p.FreelancerId == user.Id) 
                 .ToListAsync();
@@ -65,6 +67,19 @@ namespace FreelancePlatformApi.Controllers
 
             _context.Proposals.Add(proposal);
             await _context.SaveChangesAsync();
+
+            // Після збереження — сповіщаємо замовника через SignalR
+            var order = await _context.Orders
+                .Include(o => o.Customer)
+                .FirstOrDefaultAsync(o => o.Id == proposal.OrderId);
+            
+            var freelancer = await _context.Users.FindAsync(proposal.FreelancerId);
+            
+            if (order != null && freelancer != null)
+            {
+                var freelancerName = $"{freelancer.Name} {freelancer.LastName}";
+                await ChatHub.NotifyUserAboutProposal(_hubContext, order.CustomerId, freelancerName, order.Id, order.Title);
+            }
 
             return CreatedAtAction(nameof(GetProposal), new { id = proposal.Id }, proposal);
         }

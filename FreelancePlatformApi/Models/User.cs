@@ -9,7 +9,10 @@ namespace FreelancePlatformApi.Models
         public string Password { get; set; } = string.Empty; // ОСЬ ЦЕЙ РЯДОК НАЙГОЛОВНІШИЙ
         
         // Роль: "Customer" (Замовник) або "Freelancer" (Фрілансер)
-        public string Role { get; set; } = string.Empty; 
+        public string Role { get; set; } = string.Empty;
+        
+        // Аватарка у форматі base64 (nullable)
+        public string? AvatarUrl { get; set; }
         
         // Зв'язки
         public List<Order> Orders { get; set; } = new();

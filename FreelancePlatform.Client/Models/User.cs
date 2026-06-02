@@ -7,5 +7,6 @@ namespace FreelancePlatform.Client.Models
         public string Name { get; set; } = "";
         public string LastName { get; set; } = "";
         public string Role { get; set; } = "";
+        public string? AvatarUrl { get; set; }
     }
 }

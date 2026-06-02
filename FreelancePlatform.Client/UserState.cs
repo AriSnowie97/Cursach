@@ -12,6 +12,7 @@ namespace FreelancePlatform.Client
         public static string LastName { get; set; } = "";
         public static string Role { get; set; } = "";
         public static bool IsLoggedIn { get; set; } = false;
+        public static string? AvatarUrl { get; set; } = null;
 
         public static int UserId => Id; 
 
@@ -20,20 +21,20 @@ namespace FreelancePlatform.Client
         public static void NotifyStateChanged() => OnChange?.Invoke();
 
         // 1. ЗБЕРЕЖЕННЯ (SaveSession)
-        public static async Task SaveSession(IJSRuntime js, int id, string name, string lastName, string role)
-    {
-        Id = id; // Сохраняем
-        Name = name;
-        LastName = lastName;
-        Role = role;
-        IsLoggedIn = true;
+        public static async Task SaveSession(IJSRuntime js, int id, string name, string lastName, string role, string? avatarUrl = null)
+        {
+            Id = id;
+            Name = name;
+            LastName = lastName;
+            Role = role;
+            IsLoggedIn = true;
+            AvatarUrl = avatarUrl;
 
-        var userData = JsonSerializer.Serialize(new { Id, Name, LastName, Role, IsLoggedIn });
-        await js.InvokeVoidAsync("localStorage.setItem", "user_session", userData);
-        NotifyStateChanged();
-    }
+            var userData = JsonSerializer.Serialize(new { Id, Name, LastName, Role, IsLoggedIn, AvatarUrl });
+            await js.InvokeVoidAsync("localStorage.setItem", "user_session", userData);
+            NotifyStateChanged();
+        }
 
-        // 2. ЗАВАНТАЖЕННЯ (LoadSession)
         // 2. ЗАВАНТАЖЕННЯ (LoadSession)
         public static async Task LoadSession(IJSRuntime js)
         {
@@ -47,13 +48,12 @@ namespace FreelancePlatform.Client
                     
                     if (data != null)
                     {
-                        // ОСЬ ЦЕЙ РЯДОК БУВ ПРОПУЩЕНИЙ!
                         Id = data.Id; 
-                        
                         Name = data.Name;
                         LastName = data.LastName;
                         Role = data.Role;
                         IsLoggedIn = data.IsLoggedIn;
+                        AvatarUrl = data.AvatarUrl;
                         NotifyStateChanged();
                     }
                 }
@@ -64,6 +64,15 @@ namespace FreelancePlatform.Client
             }
         }
 
+        // Оновити аватарку в сесії
+        public static async Task UpdateAvatar(IJSRuntime js, string avatarUrl)
+        {
+            AvatarUrl = avatarUrl;
+            var userData = JsonSerializer.Serialize(new { Id, Name, LastName, Role, IsLoggedIn, AvatarUrl });
+            await js.InvokeVoidAsync("localStorage.setItem", "user_session", userData);
+            NotifyStateChanged();
+        }
+
         // 3. ОЧИЩЕННЯ (ClearSession)
         public static async Task ClearSession(IJSRuntime js)
         {
@@ -71,6 +80,7 @@ namespace FreelancePlatform.Client
             LastName = "";
             Role = "";
             IsLoggedIn = false;
+            AvatarUrl = null;
 
             await js.InvokeVoidAsync("localStorage.removeItem", "user_session");
             NotifyStateChanged();
@@ -83,6 +93,7 @@ namespace FreelancePlatform.Client
             public string LastName { get; set; } = "";
             public string Role { get; set; } = "";
             public bool IsLoggedIn { get; set; }
+            public string? AvatarUrl { get; set; }
         }
     }
 }

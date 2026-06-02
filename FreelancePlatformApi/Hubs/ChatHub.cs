@@ -15,6 +15,9 @@ namespace FreelancePlatformApi.Hubs
         
         // Tracks userId -> connectionId
         private static readonly ConcurrentDictionary<int, string> OnlineUsers = new();
+        
+        // Tracks userId -> role (to send targeted notifications to freelancers)
+        private static readonly ConcurrentDictionary<int, string> UserRoles = new();
 
         public ChatHub(AppDbContext context)
         {
@@ -25,9 +28,12 @@ namespace FreelancePlatformApi.Hubs
         {
             var httpContext = Context.GetHttpContext();
             var userIdStr = httpContext?.Request.Query["userId"];
+            var role = httpContext?.Request.Query["role"].ToString() ?? "";
             if (int.TryParse(userIdStr, out int userId))
             {
                 OnlineUsers[userId] = Context.ConnectionId;
+                if (!string.IsNullOrEmpty(role))
+                    UserRoles[userId] = role;
                 // Broadcast to all that this user is online
                 await Clients.All.SendAsync("UserStatusChanged", userId, true);
             }
@@ -43,6 +49,7 @@ namespace FreelancePlatformApi.Hubs
                 if (OnlineUsers.TryGetValue(userId, out var connId) && connId == Context.ConnectionId)
                 {
                     OnlineUsers.TryRemove(userId, out _);
+                    UserRoles.TryRemove(userId, out _);
                     await Clients.All.SendAsync("UserStatusChanged", userId, false);
                 }
             }
@@ -97,6 +104,17 @@ namespace FreelancePlatformApi.Hubs
             if (OnlineUsers.TryGetValue(receiverId, out var receiverConnectionId))
             {
                 await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", messageDto);
+                
+                // Send a toast notification to the receiver about new message
+                var senderUser = await _context.Users.FindAsync(senderId);
+                var senderName = senderUser != null ? $"{senderUser.Name} {senderUser.LastName}" : "Користувач";
+                await Clients.Client(receiverConnectionId).SendAsync("ReceiveNotification", new
+                {
+                    Type = "new_message",
+                    Message = $"💬 Нове повідомлення від {senderName}",
+                    RelatedId = orderId,
+                    OrderTitle = order.Title
+                });
             }
 
             // 5. Send message back to sender (confirming delivery/saving)
@@ -133,6 +151,41 @@ namespace FreelancePlatformApi.Hubs
         {
             bool isOnline = OnlineUsers.ContainsKey(userId);
             await Clients.Caller.SendAsync("UserStatusResponse", userId, isOnline);
+        }
+
+        // Called by API controllers to notify a specific customer about a new proposal
+        public static async Task NotifyUserAboutProposal(IHubContext<ChatHub> hubContext, int customerId, string freelancerName, int orderId, string orderTitle)
+        {
+            if (OnlineUsers.TryGetValue(customerId, out var connectionId))
+            {
+                await hubContext.Clients.Client(connectionId).SendAsync("ReceiveNotification", new
+                {
+                    Type = "new_proposal",
+                    Message = $"📋 {freelancerName} залишив(ла) пропозицію на замовлення «{orderTitle}»",
+                    RelatedId = orderId,
+                    OrderTitle = orderTitle
+                });
+            }
+        }
+
+        // Called by API controllers to broadcast new order to all online freelancers
+        public static async Task NotifyFreelancersAboutNewOrder(IHubContext<ChatHub> hubContext, int orderId, string orderTitle)
+        {
+            var notificationPayload = new
+            {
+                Type = "new_order",
+                Message = $"🆕 Нове замовлення: «{orderTitle}»",
+                RelatedId = orderId,
+                OrderTitle = orderTitle
+            };
+            
+            foreach (var kvp in UserRoles)
+            {
+                if (kvp.Value == "Freelancer" && OnlineUsers.TryGetValue(kvp.Key, out var connectionId))
+                {
+                    await hubContext.Clients.Client(connectionId).SendAsync("ReceiveNotification", notificationPayload);
+                }
+            }
         }
     }
 }

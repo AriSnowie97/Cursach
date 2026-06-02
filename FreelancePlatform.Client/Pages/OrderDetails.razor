@@ -20,10 +20,38 @@
         <!-- Картка замовлення -->
         <div class="card mb-4 shadow-sm">
             <div class="card-header bg-primary text-white">
-                <h3 class="card-title mb-0">@order.Title</h3>
+                <div class="d-flex justify-content-between align-items-start">
+                    <h3 class="card-title mb-0">@order.Title</h3>
+                    <span class="badge bg-light text-primary ms-3 flex-shrink-0">
+                        @(order.Status == "Open" ? "Відкрите" : order.Status == "InProgress" ? "В роботі" : "Завершено")
+                    </span>
+                </div>
             </div>
             <div class="card-body">
-                <p class="lead">@order.Description</p>
+                @* Ім'я замовника *@
+                @if (order.Customer != null)
+                {
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#4f46e5,#7c3aed); display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:0.9rem; flex-shrink:0;">
+                            @if (!string.IsNullOrEmpty(order.Customer.AvatarUrl))
+                            {
+                                <img src="@order.Customer.AvatarUrl" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />
+                            }
+                            else
+                            {
+                                @order.Customer.Name.Substring(0, 1).ToUpper()
+                            }
+                        </div>
+                        <div>
+                            <small class="text-muted d-block" style="font-size:0.75rem;">Замовник</small>
+                            <span class="fw-semibold">@order.Customer.Name @order.Customer.LastName</span>
+                        </div>
+                    </div>
+                }
+                
+                @* Повний опис замовлення *@
+                <p class="lead mb-3">@order.Description</p>
+                
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Бюджет:</strong> @order.Budget грн</p>
@@ -131,8 +159,15 @@
                 <!-- Chat Header -->
                 <div class="card-header bg-gradient d-flex align-items-center justify-content-between py-3" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white;">
                     <div class="d-flex align-items-center">
-                        <div class="chat-avatar me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.2); font-weight: bold; font-size: 1.2rem; border: 2px solid rgba(255,255,255,0.4);">
-                            @(string.IsNullOrEmpty(CounterPartyFullName) ? "С" : CounterPartyFullName.Substring(0, 1).ToUpper())
+                        <div class="chat-avatar me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255,255,255,0.2); font-weight: bold; font-size: 1.2rem; border: 2px solid rgba(255,255,255,0.4); overflow: hidden;">
+                            @if (!string.IsNullOrEmpty(CounterPartyAvatarUrl))
+                            {
+                                <img src="@CounterPartyAvatarUrl" alt="@CounterPartyFullName" style="width: 100%; height: 100%; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                @(string.IsNullOrEmpty(CounterPartyFullName) ? "С" : CounterPartyFullName.Substring(0, 1).ToUpper())
+                            }
                         </div>
                         <div>
                             <h5 class="mb-0 fw-bold" style="letter-spacing: -0.02em;">@CounterPartyFullName</h5>
@@ -287,6 +322,18 @@
                     ? $"{order.Customer.Name} {order.Customer.LastName}" 
                     : "Замовник";
             }
+        }
+    }
+
+    private string? CounterPartyAvatarUrl
+    {
+        get
+        {
+            if (order == null) return null;
+            if (UserState.Id == order.CustomerId)
+                return order.Freelancer?.AvatarUrl;
+            else
+                return order.Customer?.AvatarUrl;
         }
     }
 

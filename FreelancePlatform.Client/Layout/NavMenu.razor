@@ -1,5 +1,6 @@
-﻿@using FreelancePlatform.Client
-@implements IDisposable
+@using FreelancePlatform.Client
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
@@ -28,7 +29,15 @@
 
                     <div class="nav-item ms-lg-3">
                         <NavLink class="btn btn-primary rounded-pill px-4" href="profile" style="line-height: 1.5;">
-                            👋 @UserState.Name
+                            @if (!string.IsNullOrEmpty(UserState.AvatarUrl))
+                            {
+                                <img src="@UserState.AvatarUrl" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;" />
+                            }
+                            else
+                            {
+                                <span style="margin-right: 4px;">👋</span>
+                            }
+                            @UserState.Name
                         </NavLink>
                     </div>
                 }
@@ -46,14 +55,156 @@
     </div>
 </nav>
 
+@* Контейнер для тост-сповіщень *@
+<div id="toast-container" style="position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;">
+    @foreach (var toast in toasts)
+    {
+        <div class="toast-notification show" style="pointer-events: auto; min-width: 300px; max-width: 380px; background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); border-left: 4px solid @GetToastColor(toast.Type); padding: 14px 16px; display: flex; align-items: flex-start; gap: 10px; animation: slideInRight 0.3s ease; cursor: pointer;" @onclick="() => DismissToast(toast.Id)" @onclick:stopPropagation>
+            <span style="font-size: 1.3rem; flex-shrink: 0;">@GetToastIcon(toast.Type)</span>
+            <div style="flex: 1; min-width: 0;">
+                <p style="margin: 0; font-size: 0.875rem; font-weight: 600; color: #1e293b; line-height: 1.4;">@toast.Message</p>
+                @if (!string.IsNullOrEmpty(toast.OrderTitle))
+                {
+                    <p style="margin: 2px 0 0; font-size: 0.78rem; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@toast.OrderTitle</p>
+                }
+            </div>
+            <button style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0; font-size: 1rem; flex-shrink: 0; line-height: 1;" @onclick="() => DismissToast(toast.Id)" @onclick:stopPropagation>✕</button>
+        </div>
+    }
+</div>
+
+<style>
+    @@keyframes slideInRight {
+        from { transform: translateX(120%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+</style>
+
 @code {
+    private HubConnection? notificationHub;
+    private List<ToastModel> toasts = new();
+    private int toastCounter = 0;
+
     protected override void OnInitialized()
     {
-        UserState.OnChange += StateHasChanged;
+        UserState.OnChange += HandleStateChanged;
     }
 
-    public void Dispose()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        UserState.OnChange -= StateHasChanged;
+        if (firstRender && UserState.IsLoggedIn)
+        {
+            await ConnectToNotificationHub();
+        }
+    }
+
+    private async void HandleStateChanged()
+    {
+        StateHasChanged();
+        // Підключаємось до хабу якщо щойно залогінились
+        if (UserState.IsLoggedIn && notificationHub == null)
+        {
+            await ConnectToNotificationHub();
+        }
+        else if (!UserState.IsLoggedIn && notificationHub != null)
+        {
+            await notificationHub.DisposeAsync();
+            notificationHub = null;
+        }
+    }
+
+    private async Task ConnectToNotificationHub()
+    {
+        try
+        {
+            // Базовий URL без trailing slash
+            var baseUrl = "http://localhost:5245";
+            var hubUrl = $"{baseUrl}/chathub?userId={UserState.Id}&role={UserState.Role}";
+
+            notificationHub = new HubConnectionBuilder()
+                .WithUrl(hubUrl)
+                .WithAutomaticReconnect()
+                .Build();
+
+            // Отримання push-сповіщень
+            notificationHub.On<NotificationPayload>("ReceiveNotification", async (payload) =>
+            {
+                await InvokeAsync(() =>
+                {
+                    ShowToast(payload.Type, payload.Message, payload.OrderTitle);
+                    StateHasChanged();
+                });
+            });
+
+            await notificationHub.StartAsync();
+        }
+        catch
+        {
+            // Не заважаємо роботі якщо сервер недоступний
+        }
+    }
+
+    private void ShowToast(string type, string message, string? orderTitle = null)
+    {
+        var id = ++toastCounter;
+        toasts.Add(new ToastModel { Id = id, Type = type, Message = message, OrderTitle = orderTitle });
+        
+        // Автоматично прибираємо тост через 5 секунд
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(5000);
+            await InvokeAsync(() =>
+            {
+                DismissToast(id);
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void DismissToast(int id)
+    {
+        toasts.RemoveAll(t => t.Id == id);
+        StateHasChanged();
+    }
+
+    private string GetToastColor(string type) => type switch
+    {
+        "new_proposal" => "#f59e0b",
+        "new_order"    => "#10b981",
+        "new_message"  => "#4f46e5",
+        _              => "#6366f1"
+    };
+
+    private string GetToastIcon(string type) => type switch
+    {
+        "new_proposal" => "📋",
+        "new_order"    => "🆕",
+        "new_message"  => "💬",
+        _              => "🔔"
+    };
+
+    public async ValueTask DisposeAsync()
+    {
+        UserState.OnChange -= HandleStateChanged;
+        if (notificationHub != null)
+        {
+            try { await notificationHub.DisposeAsync(); } catch { }
+        }
+    }
+
+    private class ToastModel
+    {
+        public int Id { get; set; }
+        public string Type { get; set; } = "";
+        public string Message { get; set; } = "";
+        public string? OrderTitle { get; set; }
+    }
+
+    private class NotificationPayload
+    {
+        public string Type { get; set; } = "";
+        public string Message { get; set; } = "";
+        public int RelatedId { get; set; }
+        public string? OrderTitle { get; set; }
     }
 }
