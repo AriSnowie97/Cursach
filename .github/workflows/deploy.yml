@@ -16,7 +16,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '8.0.x' 
+        dotnet-version: '9.0.x' 
 
     # 3. Робот сам виконує команду publish, яку ти раніше писав вручну
     - name: Publish .NET Project
