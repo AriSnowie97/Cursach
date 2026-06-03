@@ -85,11 +85,8 @@
     {
         try 
         {
-            // Передаємо роль: фрілансери бачать тільки Open, замовники — Open+InProgress
-            var url = UserState.IsLoggedIn
-                ? $"api/orders?role={UserState.Role}"
-                : "api/orders";
-            orders = await Http.GetFromJsonAsync<List<OrderModel>>(url) ?? new();
+            // Всі бачать тільки Open замовлення на головній
+            orders = await Http.GetFromJsonAsync<List<OrderModel>>("api/orders") ?? new();
         } 
         catch (Exception ex) 
         { 

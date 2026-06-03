@@ -103,29 +103,17 @@ namespace FreelancePlatformApi.Controllers
             return Ok(order);
         }
 
-        // GET: api/orders — з урахуванням ролі:
-        // - Фрілансери і гості: тільки Open
-        // - Замовники: Open + InProgress (всі активні)
+        // GET: api/orders — усі бачать тільки Open замовлення (InProgress/Completed сховані)
+        // Виконані та замовлення "в роботі" видно тільки у "Мої замовлення"
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrders([FromQuery] string? role)
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
         {
-            IQueryable<Order> query = _context.Orders
+            var orders = await _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.Freelancer)
-                .OrderByDescending(o => o.Id);
-
-            if (role == "Customer")
-            {
-                // Замовник бачить всі Open + InProgress (не Completed)
-                query = query.Where(o => o.Status != "Completed");
-            }
-            else
-            {
-                // Фрілансер або гість — тільки Open (Інпрогрес схований)
-                query = query.Where(o => o.Status == "Open");
-            }
-
-            var orders = await query.ToListAsync();
+                .Where(o => o.Status == "Open")
+                .OrderByDescending(o => o.Id)
+                .ToListAsync();
             return Ok(orders);
         }
 
