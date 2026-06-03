@@ -1,2 +1,2 @@
-[phases.setup]
-nixPkgs = ["dotnet-sdk_9"]
+[variables]
+NIXPACKS_DOTNET_VERSION = "9"
