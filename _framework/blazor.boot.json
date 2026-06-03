@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "FreelancePlatform.Client",
   "resources": {
-    "hash": "sha256-qhdgYf23tdbkGDxBbEHUPVXFnQLr8lI3rAiaforK3rs=",
+    "hash": "sha256-lzshxHJe8c6LwrdvRatDweQzS+BvkudDSoVizK6IW4g=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Components.bu9l3prmg2.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Forms.z9idttgdhw.wasm": "Microsoft.AspNetCore.Components.Forms.wasm",
@@ -40,7 +40,7 @@
       "System.Diagnostics.DiagnosticSource.4or0t1avpp.wasm": "System.Diagnostics.DiagnosticSource.wasm",
       "System.IO.Pipelines.1u0q7ao7p3.wasm": "System.IO.Pipelines.wasm",
       "System.Linq.Expressions.ntzwahdl2u.wasm": "System.Linq.Expressions.wasm",
-      "System.Linq.gnu9rsnicr.wasm": "System.Linq.wasm",
+      "System.Linq.q8xaxhqnqd.wasm": "System.Linq.wasm",
       "System.Memory.xn55f3x9x5.wasm": "System.Memory.wasm",
       "System.Net.Http.Json.h34zt11v8w.wasm": "System.Net.Http.Json.wasm",
       "System.Net.Http.7bf8gyy1wi.wasm": "System.Net.Http.wasm",
@@ -62,7 +62,7 @@
       "System.Threading.ck7ypa45et.wasm": "System.Threading.wasm",
       "System.t250xnkyfs.wasm": "System.wasm",
       "System.Private.CoreLib.clysn7er9e.wasm": "System.Private.CoreLib.wasm",
-      "FreelancePlatform.Client.0mdyef25a8.wasm": "FreelancePlatform.Client.wasm",
+      "FreelancePlatform.Client.nqub699bi0.wasm": "FreelancePlatform.Client.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.native.xsn1d6x2kd.js": "dotnet.native.js",
       "dotnet.native.vz0adxojrz.wasm": "dotnet.native.wasm",
@@ -127,7 +127,7 @@
       "System.Diagnostics.DiagnosticSource.4or0t1avpp.wasm": "sha256-FM2fZNO03ER6YtkjHj7fCrPqEQPvSbgFgyO0wwgD8Rg=",
       "System.IO.Pipelines.1u0q7ao7p3.wasm": "sha256-R2qtg1CIOuLnmbvILRwmNLo/ux/w+LABJpBPmQpQ1Tg=",
       "System.Linq.Expressions.ntzwahdl2u.wasm": "sha256-pUS6HjfIX4W30cWrNH1jt6Ofukbu1FRai4JRvpvfw0Y=",
-      "System.Linq.gnu9rsnicr.wasm": "sha256-lCEI8QzsuPOwajdsv3vnaVqWX0pdg0D3sWP3vAetr84=",
+      "System.Linq.q8xaxhqnqd.wasm": "sha256-ystHkF5LtgEjgUrG5SCLQwWtlE4zGzh7qc69WdEpse4=",
       "System.Memory.xn55f3x9x5.wasm": "sha256-7VZ6D9r8NtYdtbZn4lJFJAo8bq+V13C+OqQ4DDiSWd8=",
       "System.Net.Http.Json.h34zt11v8w.wasm": "sha256-fbALLhD3rtEGsF8DgpENPub4JAFc3AAbBitm6sEbLp8=",
       "System.Net.Http.7bf8gyy1wi.wasm": "sha256-gzdwt//uIOw96+AFpzj9A4oetwhC1/7Z5nmIGN/9RVM=",
@@ -147,7 +147,7 @@
       "System.Threading.Channels.zscynwcchw.wasm": "sha256-rdNE9oa3+MatWYqFbkzDI+d4GR2qg096l9H2CSIYZWs=",
       "System.Threading.ck7ypa45et.wasm": "sha256-NAT337jZ8vKKqEaIIZX7h6Ebx8VSc6hIlBPK0fPmL28=",
       "System.t250xnkyfs.wasm": "sha256-tVaTeiubnxofQV5rO7ga2UOORIQEtLkQr36ewcMO+tw=",
-      "FreelancePlatform.Client.0mdyef25a8.wasm": "sha256-aEMuRZpy/xgEyzhGWVrabi4bQOfrdafouEKERf4o7cg="
+      "FreelancePlatform.Client.nqub699bi0.wasm": "sha256-X0qYT9KDnUJVJco2qbfTvHufqHOcoKKXbM13wx4KJEI="
     }
   },
   "cacheBootResources": true,
