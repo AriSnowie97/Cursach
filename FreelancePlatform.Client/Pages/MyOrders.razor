@@ -1,0 +1,154 @@
+@page "/my-orders"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@using FreelancePlatform.Client
+
+<PageTitle>Мої замовлення — Фриланс.ЮА</PageTitle>
+
+@if (!UserState.IsLoggedIn || UserState.Role != "Customer")
+{
+    <div class="container mt-5">
+        <div class="alert alert-warning text-center">
+            Ця сторінка доступна лише для замовників. <a href="login">Увійдіть</a> або <a href="register">зареєструйтесь</a>.
+        </div>
+    </div>
+}
+else
+{
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>📋 Мої замовлення</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary" @onclick="LoadOrders">🔄 Оновити</button>
+                <a href="create-order" class="btn btn-primary rounded-pill px-4">+ Нове замовлення</a>
+            </div>
+        </div>
+
+        @if (orders == null)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Завантаження замовлень...</p>
+            </div>
+        }
+        else if (!orders.Any())
+        {
+            <div class="alert alert-info text-center py-5">
+                <p class="fs-5 mb-2">📭 У вас ще немає замовлень</p>
+                <a href="create-order" class="btn btn-primary rounded-pill px-4 mt-2">Створити перше замовлення</a>
+            </div>
+        }
+        else
+        {
+            <!-- Статистика -->
+            <div class="row mb-4 g-3">
+                <div class="col-sm-4">
+                    <div class="card border-0 shadow-sm text-center py-3" style="border-radius: 12px; border-left: 4px solid #10b981 !important;">
+                        <div class="fs-2 fw-bold text-success">@orders.Count(o => o.Status == "Open")</div>
+                        <div class="text-muted small">Відкритих</div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="card border-0 shadow-sm text-center py-3" style="border-radius: 12px; border-left: 4px solid #f59e0b !important;">
+                        <div class="fs-2 fw-bold text-warning">@orders.Count(o => o.Status == "InProgress")</div>
+                        <div class="text-muted small">В роботі</div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="card border-0 shadow-sm text-center py-3" style="border-radius: 12px; border-left: 4px solid #6366f1 !important;">
+                        <div class="fs-2 fw-bold text-primary">@orders.Count(o => o.Status == "Completed")</div>
+                        <div class="text-muted small">Завершених</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="myOrdersList">
+                @foreach (var order in orders)
+                {
+                    <NavLink href="@($"order/{order.Id}")" class="card text-decoration-none mb-3" style="display: block; cursor: pointer; color: inherit;">
+                        <article class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h3 class="mb-0">@order.Title</h3>
+                                <span class="badge ms-2 flex-shrink-0 @GetStatusBadgeClass(order.Status)">
+                                    @GetStatusLabel(order.Status)
+                                </span>
+                            </div>
+
+                            <p class="text-muted mb-2">
+                                @(order.Description.Length > 120
+                                    ? order.Description.Substring(0, 120) + "..."
+                                    : order.Description)
+                            </p>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">💰 Бюджет: @order.Budget грн</span>
+                                @if (order.FreelancerName != null)
+                                {
+                                    <small class="text-muted">🔧 Виконавець: @order.FreelancerName</small>
+                                }
+                            </div>
+                        </article>
+                    </NavLink>
+                }
+            </div>
+        }
+    </main>
+}
+
+@code {
+    private List<MyOrderModel>? orders;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrders();
+    }
+
+    private async Task LoadOrders()
+    {
+        try
+        {
+            orders = await Http.GetFromJsonAsync<List<MyOrderModel>>($"api/orders/my?userId={UserState.Id}") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Помилка завантаження: {ex.Message}");
+            orders = new();
+        }
+    }
+
+    private string GetStatusBadgeClass(string status) => status switch
+    {
+        "Open"       => "bg-success",
+        "InProgress" => "bg-warning text-dark",
+        "Completed"  => "bg-primary",
+        _            => "bg-secondary"
+    };
+
+    private string GetStatusLabel(string status) => status switch
+    {
+        "Open"       => "Відкрите",
+        "InProgress" => "В роботі",
+        "Completed"  => "Завершено",
+        _            => status
+    };
+
+    public class MyOrderModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal Budget { get; set; }
+        public string Status { get; set; } = "Open";
+
+        public string? FreelancerName => Freelancer != null ? $"{Freelancer.Name} {Freelancer.LastName}" : null;
+
+        public FreelancerInfo? Freelancer { get; set; }
+    }
+
+    public class FreelancerInfo
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string LastName { get; set; } = "";
+    }
+}

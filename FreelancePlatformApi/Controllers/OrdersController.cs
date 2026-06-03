@@ -83,39 +83,62 @@ namespace FreelancePlatformApi.Controllers
             var order = await _context.Orders.FindAsync(id);
             if (order == null) return NotFound("Замовлення не знайдено");
 
-            // Можна додати перевірки, наприклад: тільки замовник може скасувати, 
-            // або тільки фрілансер може перевести в InProgress
             order.Status = newStatus;
             
             await _context.SaveChangesAsync();
             return Ok(order);
         }
 
-        // GET: api/orders?role=Customer&userId=1 (Отримання замовлень з фільтром по ролі)
+        // PUT: api/orders/{id}/cancel-freelancer — відмова від фрілансера, повернення замовлення в Open
+        [HttpPut("{id}/cancel-freelancer")]
+        public async Task<IActionResult> CancelFreelancer(int id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return NotFound("Замовлення не знайдено");
+
+            order.FreelancerId = null;
+            order.Status = "Open";
+
+            await _context.SaveChangesAsync();
+            return Ok(order);
+        }
+
+        // GET: api/orders — з урахуванням ролі:
+        // - Фрілансери і гості: тільки Open
+        // - Замовники: Open + InProgress (всі активні)
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrders([FromQuery] string? role, [FromQuery] int? userId)
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrders([FromQuery] string? role)
         {
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.Customer)
-                .Include(o => o.Freelancer);
+                .Include(o => o.Freelancer)
+                .OrderByDescending(o => o.Id);
 
-            if (role == "Customer" && userId.HasValue)
+            if (role == "Customer")
             {
-                // Замовник бачить свої Open + InProgress замовлення
-                query = query.Where(o => o.CustomerId == userId.Value && o.Status != "Completed");
-            }
-            else if (role == "Freelancer")
-            {
-                // Фрілансер бачить лише Open замовлення (де можна подати пропозицію)
-                query = query.Where(o => o.Status == "Open");
+                // Замовник бачить всі Open + InProgress (не Completed)
+                query = query.Where(o => o.Status != "Completed");
             }
             else
             {
-                // Гість або невизначена роль — бачить лише Open (не Completed, не InProgress)
+                // Фрілансер або гість — тільки Open (Інпрогрес схований)
                 query = query.Where(o => o.Status == "Open");
             }
 
             var orders = await query.ToListAsync();
+            return Ok(orders);
+        }
+
+        // GET: api/orders/my?userId=1 — власні замовлення заказчика (всі статуси)
+        [HttpGet("my")]
+        public async Task<ActionResult<IEnumerable<Order>>> GetMyOrders([FromQuery] int userId)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.Freelancer)
+                .Where(o => o.CustomerId == userId)
+                .OrderByDescending(o => o.Id)
+                .ToListAsync();
             return Ok(orders);
         }
 

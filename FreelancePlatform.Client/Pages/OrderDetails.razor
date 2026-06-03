@@ -63,9 +63,12 @@
 
                 @if (UserState.IsLoggedIn && UserState.Role == "Customer" && order.CustomerId == UserState.Id && order.Status == "InProgress")
                 {
-                    <div class="mt-3 border-top pt-3">
+                    <div class="mt-3 border-top pt-3 d-flex gap-2 flex-wrap">
                         <button class="btn btn-success" @onclick="CompleteOrder">
                             ✅ Позначити як виконане (Завершити замовлення)
+                        </button>
+                        <button class="btn btn-outline-danger" @onclick="CancelFreelancer">
+                            ❌ Відмовитись від фрілансера
                         </button>
                     </div>
                 }
@@ -546,6 +549,38 @@
         }
     }
  
+    private async Task CancelFreelancer()
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var response = await Http.PutAsync($"api/orders/{Id}/cancel-freelancer", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = "Фрілансера відпущено. Замовлення повернуто в статус Відкритое!";
+                await LoadOrderDetails();
+                // Відключаємось від чату
+                if (hubConnection != null)
+                {
+                    await hubConnection.DisposeAsync();
+                    hubConnection = null;
+                }
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Не вдалось відмовитись від фрілансера: {content}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Сталася непередбачена помилка: {ex.Message}";
+        }
+    }
+
     private async Task CompleteOrder()
     {
         errorMessage = null;

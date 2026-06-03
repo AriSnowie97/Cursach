@@ -7,16 +7,7 @@
 
 <main class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-            @if (UserState.IsLoggedIn && UserState.Role == "Customer")
-            {
-                <span>Мої замовлення</span>
-            }
-            else
-            {
-                <span>Активні проєкти</span>
-            }
-        </h2>
+        <h2>Всі замовлення</h2>
         <button class="btn btn-outline-primary" @onclick="LoadOrders">🔄 Оновити</button>
     </div>
 
@@ -30,14 +21,7 @@
     else if (!orders.Any())
     {
         <div class="alert alert-info text-center py-4">
-            @if (UserState.IsLoggedIn && UserState.Role == "Customer")
-            {
-                <p class="mb-0">У вас ще немає замовлень. <a href="create-order">Створіть перше!</a></p>
-            }
-            else
-            {
-                <p class="mb-0">Немає доступних замовлень. Зайдіть пізніше!</p>
-            }
+            <p class="mb-0">Немає доступних замовлень. Зайдіть пізніше!</p>
         </div>
     }
     else
@@ -101,12 +85,10 @@
     {
         try 
         {
-            // Передаємо роль і ID щоб API повернув потрібні замовлення
-            string url = "api/orders";
-            if (UserState.IsLoggedIn)
-            {
-                url = $"api/orders?role={UserState.Role}&userId={UserState.Id}";
-            }
+            // Передаємо роль: фрілансери бачать тільки Open, замовники — Open+InProgress
+            var url = UserState.IsLoggedIn
+                ? $"api/orders?role={UserState.Role}"
+                : "api/orders";
             orders = await Http.GetFromJsonAsync<List<OrderModel>>(url) ?? new();
         } 
         catch (Exception ex) 
